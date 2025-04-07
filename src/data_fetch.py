@@ -24,4 +24,4 @@ for movie_id in movie_ids:
         print(f"Failed to fetch data for ID: {movie_id}: {response.status_code}, {response.json()}")
 
 data = pd.DataFrame(movie_data)
-data.to_csv("data/raw/raw_movie_data.csv", index=False)
+data.to_csv("data/raw/raw_movie_data.csv", index=False) 
