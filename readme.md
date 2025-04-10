@@ -44,7 +44,7 @@ The dataset required several preprocessing steps, including:
 Install the required packages using:
 
 ```bash
-pip install pandas matplotlib seaborn numpy
+pip install pandas matplotlib numpy
 ```
 
 Make sure you have Jupyter Notebook or JupyterLab installed to run the `.ipynb` file.
@@ -66,10 +66,7 @@ Make sure you have Jupyter Notebook or JupyterLab installed to run the `.ipynb` 
 
 ## Dataset Source
 
-The dataset used in this project is from [Kaggle - TMDB Movie Dataset](https://www.kaggle.com/tmdb/tmdb-movie-metadata).
+The dataset used in this project is from [TMDB API](https://api.themoviedb.org/3/movie/).
 
-## Contributing
-
-Contributions are welcome! If you'd like to improve or extend this project, feel free to fork the repo and submit a pull request.
 
 
