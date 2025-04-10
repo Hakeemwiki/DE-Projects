@@ -49,7 +49,7 @@ pip install pandas matplotlib numpy
 
 Make sure you have Jupyter Notebook or JupyterLab installed to run the `.ipynb` file.
 
-## ▶️ Getting Started
+## Getting Started
 
 1. Clone the repo:
    ```bash
