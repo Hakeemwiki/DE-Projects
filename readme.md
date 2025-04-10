@@ -5,7 +5,7 @@ This project is a comprehensive analysis of movie data sourced from The Movie Da
 ## Project Structure
 
 - `TMDB_Movie_analysis.ipynb`: Jupyter Notebook containing the full data analysis workflow — from data cleaning to visualization and interpretation.
-- `tmdb-movies.csv`: (Expected) dataset used in this analysis. Make sure this file is present in the working directory.
+- The dataset used in this analysis is found in my data folder. Make sure this file is present in the working directory.
 - `README.md`: Project documentation (you’re reading it!).
 
 ## Key Questions Addressed
