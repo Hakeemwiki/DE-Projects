@@ -1,137 +1,131 @@
-E-Commerce Inventory & Order Management System (SQL Project)
-Welcome to my SQL-based E-commerce Inventory and Order Management System — a robust setup built to manage product inventories, handle customer orders, track stock levels, and provide insight into customer behavior. I designed this system to simulate real-world e-commerce operations with automation, business logic, and clean structure.
 
-This system is ideal for learning, simulations, and can even serve as a solid foundation for a production-grade backend.
+# E-Commerce Inventory & Order Management System (SQL Project)
 
-Technologies Used
-MySQL
+This is a SQL-based **E-commerce Inventory and Order Management System** that I designed to simulate the core backend operations of an online store. The system manages product inventories, handles customer orders, tracks stock changes, and offers basic logic for order automation and discount handling.
 
-SQL Procedures & Triggers
+This project can serve as a learning tool, a test simulation, or a strong starting point for a more advanced backend solution.
 
-Relational Database Design Principles
+---
 
-Project Logic & Design Philosophy
-PHASE 1: Database Schema Design
-In this phase, I focused on laying a clean, relational foundation with proper normalization and integrity constraints.
+## Technologies Used
 
-1. Products Table
-Holds details of all products available in the inventory.
-Key columns:
+- MySQL
+- SQL Triggers
+- Stored Procedures
+- Relational Database Design
 
-stock_quantity - keeps track of what's available
+---
 
-reorder_level - helps monitor low stock alerts
+## Project Logic & Design Overview
 
-2. Customers Table
-Stores basic customer data, with email being unique to avoid duplication.
+### Phase 1: Database Schema Design
 
-3. Orders Table
-Each row represents a customer order, with:
+The schema is built with normalization and referential integrity in mind. Here’s how the tables are structured:
 
-total_amount and total_items dynamically updated.
+#### 1. `Products` Table
+- Stores product details like name, category, price, stock quantity, and reorder level.
+- Useful for tracking inventory status and replenishment needs.
 
-Linked to Customers via a foreign key.
+#### 2. `Customers` Table
+- Maintains customer data with unique emails to avoid duplication.
+- Supports future personalization and tracking of order history.
 
-4. Order_Details Table
-Captures the individual products associated with an order, their quantities, prices, and applicable discounts.
-Composite primary key (order_id, product_id) ensures no duplicate entries per order-product pair.
+#### 3. `Orders` Table
+- Tracks each order placed, including who placed it and when.
+- Has fields for `total_amount` and `total_items`, which are updated automatically through logic.
 
-5. Inventory_Logs Table
-Every time stock is updated, this table logs:
+#### 4. `Order_Details` Table
+- Links individual products to their respective orders.
+- Handles quantity, price, and discounts.
+- Uses a composite primary key (`order_id`, `product_id`) for uniqueness.
 
-The amount changed
+#### 5. `Inventory_Logs` Table
+- Records every inventory change, whether it’s due to order placement or restocking.
+- Helps track stock movement and audit changes over time.
 
-Whether it was due to a replenishment or order placement
+---
 
-Sample Data Insertion
-I inserted a variety of products across categories (Electronics, Home, Fashion, etc.) and created sample customer records. This helps simulate real order activity and track how the system behaves under different scenarios.
+## Sample Data
 
-PHASE 2: Business Logic Automation
-Here’s where the system goes from static to dynamic. I introduced automation using Triggers and Stored Procedures.
+The project includes pre-filled entries for:
+- A range of products across categories (Electronics, Fashion, Home)
+- Several customers
+- Simulated orders and related order details
 
-Trigger: trg_log_inventory_change
-Whenever a product’s stock is updated, this trigger:
+This setup allows for immediate testing and validation of the system.
 
-Inserts a log into Inventory_Logs
+---
 
-Automatically categorizes the stock movement as either Order Placement (stock down) or Replenishment (stock up)
+## Phase 2: Business Logic Automation
 
-This ensures you always have an audit trail of stock movements — no need for manual entries!
+To make the system dynamic and reduce manual effort, I implemented a trigger and a stored procedure.
 
-Stored Procedure: PlaceMultipleOrder
-This procedure lets you place an order for multiple products at once, all through a single call. Here’s the breakdown of how it works:
+### Trigger: `trg_log_inventory_change`
 
-Takes Inputs:
+This trigger automatically fires whenever the `stock_quantity` of a product is updated. It does the following:
+- Detects whether the stock is being replenished or reduced
+- Logs the change into the `Inventory_Logs` table with a timestamp
 
-p_customer_id: Who’s ordering?
+This provides a complete, automated trail of all inventory activity.
 
-p_product_ids: Comma-separated list of product IDs (e.g. '1,3,5')
+### Stored Procedure: `PlaceMultipleOrder`
 
-p_quantities: Corresponding quantities (e.g. '2,1,4')
+This procedure handles the process of placing an order for multiple products at once. Key steps include:
+- Accepts a customer ID, list of product IDs, and their corresponding quantities
+- Applies discount logic based on quantity thresholds (3+, 5+, 10+)
+- Calculates prices with discounts and inserts entries into `Order_Details`
+- Updates stock for each product
+- Computes the total amount and total number of items for the order
+- Uses transactions to ensure consistency: all operations succeed together or roll back together
 
-Processes Each Product:
+---
 
-Calculates applicable discounts (based on quantity thresholds: 3+, 5+, 10+)
+## Business Scenarios Handled
 
-Computes discounted_price
+- Real-time inventory updates
+- Automatic inventory logging
+- Tiered discount system based on quantity
+- Atomic, multi-product order processing
+- Order and customer tracking
 
-Adds entry to Order_Details
+---
 
-Reduces the product's stock_quantity
+## Possible Enhancements
 
-Updates the Main Order Record:
+- Add user roles (e.g., admin, customer)
+- Build a frontend using Streamlit or Flask
+- Connect with a BI tool like Power BI or Tableau for reporting
+- Include email notifications for stock levels or order confirmations
 
-total_amount and total_items are computed dynamically
+---
 
-Keeps the logic clean, reusable, and rollback-safe with transactions
 
-With just one call, multiple operations are completed atomically. Either everything goes in or nothing at all — thanks to the transaction block.
+If you'd like to collaborate or have feedback, feel free to reach out.
 
-Business Scenarios Covered
-Track product movement (stock in/out)
+---
 
-Handle dynamic order pricing and discounting
+## File Overview
 
-Maintain order history
+| Section           | Description |
+|-------------------|-------------|
+| Database Setup    | Creates the e-commerce database and selects it |
+| Table Creation    | Defines schema for products, orders, customers, etc. |
+| Sample Data       | Inserts initial records for testing |
+| Trigger           | Logs inventory changes |
+| Stored Procedure  | Automates placing orders for multiple products |
 
-Prevent stock mismatch with constraints and triggers
+---
 
-Possible Extensions
-Add user roles (Admin, Customer)
+## Sample Procedure Call
 
-Introduce product restocking functionality
+To simulate a multi-product order:
 
-Visualize orders and stock insights with a BI tool (Power BI or Tableau)
-
-Create a web frontend (Streamlit, Flask, etc.)
-
-About Me
-I'm Hakeem Wikireh, a Data Scientist and SQL enthusiast with a strong love for building systems that solve real problems. Whether it’s cleaning datasets, designing dashboards, or writing backends like this, I enjoy the journey from raw data to business value.
-
-If you’re reading this and want to collaborate, ask questions, or brainstorm — feel free to reach out.
-
-📁 File Overview
-
-File/Section	Description
-CREATE DATABASE	Creates and selects the e-commerce database
-CREATE TABLE	Defines the schema for all core entities
-INSERT INTO	Seeds sample products, customers, and orders
-TRIGGERS	Automates inventory logging
-PROCEDURES	Places complex multi-product orders efficiently
-
-Try It Yourself
-Here’s a sample procedure call to simulate an order:
-
-sql
-Copy
-Edit
+```sql
 CALL PlaceMultipleOrder(1, '2,3,4', '1,2,1');
+```
+
 This places an order for:
-
-1x Smartphone
-
-2x Headphones
-
-1x T-Shirt
-All under Customer ID 1 (Suave Juggernaut) 
-
+- 1 Smartphone
+- 2 Headphones
+- 1 T-Shirt  
+All ordered by the customer with ID 1.
