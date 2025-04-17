@@ -1,7 +1,16 @@
 
 # E-Commerce Inventory & Order Management System (SQL Project)
 
-This is a SQL-based **E-commerce Inventory and Order Management System** that I designed to simulate the core backend operations of an online store. The system manages product inventories, handles customer orders, tracks stock changes, and offers basic logic for order automation and discount handling.
+**Problem Statement: Inventory and Order Management System**
+You are tasked with designing and implementing a database-driven system to manage the
+inventory and orders for an e-commerce company. The system needs to handle product
+information, customer data, and order processing efficiently while ensuring that stock levels are
+properly updated when orders are placed. Additionally, the company wants to track all inventory
+changes and streamline processes related to stock replenishment.
+The system should provide insights into customer purchase behaviors, monitor stock levels, and
+ensure that products are always available for sale. Your solution should support day-to-day
+operations such as placing orders, updating inventory, and summarizing important business
+metrics like order summaries and customer spending.
 
 This project can serve as a learning tool, a test simulation, or a strong starting point for a more advanced backend solution.
 
