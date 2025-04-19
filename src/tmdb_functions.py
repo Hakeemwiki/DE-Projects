@@ -255,3 +255,215 @@ def kpi_ranking(df, metric, n=10, top=True, filter_col=None, filter_val=None):
         data = data[data[filter_col] >= filter_val]
     return data.nlargest(n, metric) if top else data.nsmallest(n, metric)
 
+# ------------------------------------------------------------------------
+# ADVANCED TEXT SEARCH FUNCTION
+# ------------------------------------------------------------------------
+
+
+def advanced_search(df, genre_keywords=None, cast_keywords=None, director_keywords=None,
+                    sort_by=None, ascending=True):
+    """
+    Filter movies based on keyword presence in genres, cast, and director fields.
+    Optionally sort results by a specified column.
+
+    Parameters:
+      df : DataFrame
+      genre_keywords : str (e.g. 'Science|Fiction|Action')
+      cast_keywords : str (e.g. 'Bruce Willis')
+      director_keywords : str (e.g. 'Quentin Tarantino')
+      sort_by : str, column name to sort results
+      ascending : bool, default True (sort direction)
+
+    Returns:
+      Filtered and optionally sorted DataFrame
+    """
+    data = df.copy()
+    if genre_keywords:
+        data = data[data['genres'].str.contains(genre_keywords, case=False, na=False)]
+    if cast_keywords:
+        data = data[data['cast'].str.contains(cast_keywords, case=False, na=False)]
+    if director_keywords:
+        data = data[data['director'].str.contains(director_keywords, case=False, na=False)]
+    if sort_by:
+        data = data.sort_values(by=sort_by, ascending=ascending)
+    return data.reset_index(drop=True)
+
+# ------------------------------------------------------------------------
+# FRANCHISE VERSUS STANDALONE
+# ------------------------------------------------------------------------
+
+def franchise_vs_standalone(data):
+    franchise = data[data['belongs_to_collection'].notna()]
+    standalone = data[data['belongs_to_collection'].isna()]
+
+#create a simple table for the comparison
+    summary_stats = {
+        'Group': ['Franchise', 'Standalone'],
+
+        'Mean Revenue': [
+            franchise['revenue_millions'].mean(),
+            standalone['revenue_millions'].mean()
+        ],
+
+        'Mean ROI': [
+            franchise['roi'].mean(),
+            standalone['roi'].mean()
+        ],
+
+        'Mean Budget Raised': [
+            franchise['budget_millions'].mean(),
+            standalone['budget_millions'].mean()
+        ],
+
+        'Mean Popularity': [
+            franchise['popularity'].mean(),
+            standalone['popularity'].mean()
+        ],
+
+        'Mean Rating': [
+            franchise['vote_average'].mean(),
+            standalone['vote_average'].mean()
+        ]
+    }
+
+    comparison_data = pd.DataFrame(summary_stats)
+
+    return comparison_data
+
+
+# ------------------------------------------------------------------------
+# ANALYZE FRANCHISE AND DIRECTORS
+# ------------------------------------------------------------------------
+
+def analyze_franchise(data, sort_by = None, ascending = False):
+
+    # Group the data based on franchise and their aggregations to help ease the analysis
+
+    franchise = data[data['belongs_to_collection'].notna()]
+
+    franchise_stat = franchise.groupby('belongs_to_collection').agg({
+        'id': 'count',
+        'budget_millions': ['sum', 'mean'],
+        'revenue_millions': ['sum', 'mean'],
+        'vote_average': 'mean'
+    })
+
+    franchise_stat.columns = ['total_movies', 'total_budget_millions', 'budget_mean', 'total_revenue_millions',
+                              'revenue_mean', 'mean_rating']
+    
+    if sort_by:
+        franchise_stat = franchise_stat.sort_values(by = sort_by, ascending = ascending)
+    return franchise_stat
+
+
+def analyze_directors(data, sort_by = None, ascending = False):
+
+    #Grouping the directors based on the aggregate functions
+
+    franchise = data[data['belongs_to_collection'].notna()]
+
+    franchise_stat = franchise.groupby('director').agg({
+        'id': 'count',
+        'revenue_millions': 'sum',
+        'vote_average': 'mean'
+    })
+
+    franchise_stat.columns = ['total_movies_directed', 'total_revenue_millions',
+                               'mean_rating']
+    
+    if sort_by:
+        franchise_stat = franchise_stat.sort_values(by = sort_by, ascending = ascending)
+    return franchise_stat
+    
+
+# ------------------------------------------------------------------------
+# VISUALIZATIONS
+# ------------------------------------------------------------------------
+
+def plot_revenue_vs_budget(df):
+    """Visualize Revenue vs. Budget Trends using a scatter plot."""
+    plt.figure(figsize=(10, 6))
+    plt.scatter(df['budget_millions'], df['revenue_millions'], alpha=0.5)
+    plt.title("Revenue vs. Budget Trends")
+    plt.xlabel("Budget (Millions USD)")
+    plt.ylabel("Revenue (Millions USD)")
+
+def plot_roi_by_genre(df):
+    """Visualize Mean ROI by Genre using a bar chart."""
+    # Split genres (since they’re separated by '|') and explode into rows
+    df_genres = df.assign(genres=df['genres'].str.split('|')).explode('genres')
+    
+    # Calculate mean ROI per genre
+    roi_by_genre = df_genres.groupby('genres')['roi'].mean().sort_values(ascending=False)
+    
+    
+    # Plotting
+    plt.figure(figsize=(12, 6))
+    roi_by_genre.plot(kind='bar', color='skyblue')
+    plt.title("Mean ROI by Genre")
+    plt.xlabel("Genre")
+    plt.ylabel("Mean ROI (Revenue / Budget)")
+    plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for readability
+    plt.tight_layout()
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    
+def plot_popularity_vs_rating(df):
+    """Visualize Popularity vs. Rating using a scatter plot."""
+    plt.figure(figsize=(10, 6))
+    plt.scatter(df['popularity'], df['vote_average'], alpha=0.5)
+    plt.title("Popularity vs. Rating")
+    plt.xlabel("Popularity")
+    plt.ylabel("Rating (Vote Average)")
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+def plot_yearly_box_office(df):
+    """Visualize Yearly Trends in Box Office Performance using a line plot."""
+    # Extract year from release_date
+    df['year'] = pd.to_datetime(df['release_date']).dt.year
+    
+    # Group by year and calculate total revenue
+    yearly_revenue = df.groupby('year')['revenue_millions'].sum()
+    
+    plt.figure(figsize=(12, 6))
+    yearly_revenue.plot(kind='line', marker='o')
+    plt.title("Yearly Trends in Box Office Performance")
+    plt.xlabel("Year")
+    plt.ylabel("Total Revenue (Millions USD)")
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+def plot_franchise_vs_standalone(df):
+    """Visualize Comparison of Franchise vs. Standalone Success using a bar plot."""
+    # Separate franchise and standalone
+    franchise = df[df['belongs_to_collection'].notna()]
+    standalone = df[df['belongs_to_collection'].isna()]
+    
+    # Calculate metrics
+    metrics = {
+        'Mean Revenue': franchise['revenue_millions'].mean(),
+        'Mean Budget': franchise['budget_millions'].mean(),
+        'Mean Rating': franchise['vote_average'].mean()
+    }
+    standalone_metrics = {
+        'Mean Revenue': standalone['revenue_millions'].mean(),
+        'Mean Budget': standalone['budget_millions'].mean(),
+        'Mean Rating': standalone['vote_average'].mean()
+    }
+    
+    # Prepare data for plotting
+    comparison_df = pd.DataFrame({
+        'Franchise': metrics,
+        'Standalone': standalone_metrics
+    })
+    
+    # Plot
+    plt.figure(figsize=(10, 6))
+    comparison_df.plot(kind='bar')
+    plt.title("Franchise vs. Standalone Success")
+    plt.xlabel("Metric")
+    plt.ylabel("Value")
+    plt.xticks(rotation=0)
+    plt.legend(title="Movie Type")
+    plt.tight_layout()
