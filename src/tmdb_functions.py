@@ -1,13 +1,15 @@
 
 import os
-import ast
+import ast  # For safely evaluating Python expressions
 import json
-import logging
+import logging # For writing status messages (info, warning, errors)
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+
+# For adding retry logic to requests (helps handle API timeouts or failures)
+from requests.adapters import HTTPAdapter  # Enables retrying failed HTTP requests
+from urllib3.util.retry import Retry  # Defines retry strategy (like how many times to retry)
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)
@@ -44,9 +46,14 @@ def fetch_movie_data(ids):
         "https://api.themoviedb.org/3/movie/{id}?api_key={api}&append_to_response=credits"
     )
     
+    # Create a session object to persist settings (like retries) across requests
     session = requests.Session()
+
+    # Define retry strategy: try up to 3 times with backoff, for specific error codes
     retry = Retry(total=3, backoff_factor=0.3,
                   status_forcelist=[429, 500, 502, 503, 504])
+    
+    # Mount the retry strategy to the session for all HTTPS requests
     session.mount('https://', HTTPAdapter(max_retries=retry))
 
     results = []
