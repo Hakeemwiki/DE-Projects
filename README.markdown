@@ -1,31 +1,33 @@
 # TMDB Movie Data Analysis
 
-This project provides a comprehensive analysis of movie data sourced from [The Movie Database (TMDB) API](https://www.themoviedb.org/documentation/api). It includes Python scripts and a Jupyter Notebook to fetch, clean, analyze, and visualize movie data, focusing on key performance indicators (KPIs), franchise vs. standalone comparisons, director performance, and more. The project is modular, well-documented, and designed for reproducibility and extensibility.
+This project provides a comprehensive analysis of movie data sourced from The Movie Database (TMDB) API. It includes Python scripts and a Jupyter Notebook to fetch, clean, analyze, and visualize movie data, focusing on key performance indicators (KPIs), franchise vs. standalone comparisons, director performance, and more. The project is modular, well-documented, and designed for reproducibility and extensibility.
 
 ## Table of Contents
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Repository Structure](#repository-structure)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Setup Instructions](#setup-instructions)
-- [Usage](#usage)
-  - [Running the Jupyter Notebook](#running-the-jupyter-notebook)
-  - [Using the Python Module](#using-the-python-module)
-- [Data Source](#data-source)
-- [Key Components](#key-components)
-  - [Data Fetching](#data-fetching)
-  - [Data Cleaning](#data-cleaning)
-  - [Analysis Functions](#analysis-functions)
-  - [Visualizations](#visualizations)
-- [Example Outputs](#example-outputs)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
-- [Contact](#contact)
+
+- Project Overview
+- Features
+- Repository Structure
+- Installation
+  - Prerequisites
+  - Setup Instructions
+- Usage
+  - Running the Jupyter Notebook
+  - Using the Python Module
+- Data Source
+- Key Components
+  - Data Fetching
+  - Data Cleaning
+  - Analysis Functions
+  - Visualizations
+- Example Outputs
+- Contributing
+- Acknowledgements
+- Contact
 
 ## Project Overview
+
 The TMDB Movie Data Analysis project is designed to:
+
 - Fetch movie metadata (e.g., budget, revenue, genres, cast, crew) from the TMDB API for a predefined list of movie IDs.
 - Clean and preprocess the data to ensure consistency and usability.
 - Perform advanced analyses, including KPI rankings, franchise vs. standalone comparisons, and director performance evaluations.
@@ -34,6 +36,7 @@ The TMDB Movie Data Analysis project is designed to:
 The project is implemented in Python, leveraging libraries like `pandas`, `requests`, `matplotlib`, and `logging`. It is structured to be modular, with reusable functions in `tmdb_functions.py` and an interactive analysis workflow in `TMDB_analysis(Modular).ipynb`.
 
 ## Features
+
 - **Data Fetching**: Retrieve movie details and credits from the TMDB API with retry logic for robust handling of network issues.
 - **Data Cleaning**: Standardize and preprocess complex data (e.g., nested JSON, stringified lists) into a clean, analysis-ready DataFrame.
 - **KPI Analysis**: Rank movies by metrics like revenue, ROI, or popularity, with optional filtering.
@@ -45,81 +48,121 @@ The project is implemented in Python, leveraging libraries like `pandas`, `reque
 - **Logging**: Comprehensive logging for debugging and monitoring data fetching and saving processes.
 
 ## Repository Structure
+
 ```plaintext
 TMDB-Movie-Analysis/
-├── tmdb_functions.py         # Python module with data fetching, cleaning, and analysis functions
-├── TMDB_analysis(Modular).ipynb  # Jupyter Notebook for interactive analysis and visualization
-├── raw_movie_data_new.csv    # Raw data fetched from TMDB API (generated)
-├── cleaned_movie_data.csv    # Cleaned and processed data (generated)
-├── visualizations/           # Directory for saved visualization PNG files
-│   ├── revenue_vs_budget.png
-│   ├── roi_by_genre.png
-│   ├── popularity_vs_rating.png
-│   ├── yearly_box_office.png
-│   └── franchise_vs_standalone.png
-├── README.md                 # Project documentation (this file)
-└── requirements.txt          # Python dependencies
+├── notebooks/                        # Directory for Jupyter Notebooks and data files
+│   ├── __pycache__/                  # Python cache directory (auto-generated)
+│   ├── cleaned_movie_data.csv        # Cleaned and processed data (generated)
+│   ├── raw_movie_data_new.csv        # Raw data fetched from TMDB API (generated)
+│   ├── raw_movie_data.csv            # Additional raw data file (generated)
+│   ├── TMDB_analysis(Modular).ipynb  # Main Jupyter Notebook for interactive analysis
+│   ├── tmdb_functions.py             # Python module with data fetching, cleaning, and analysis functions
+│   └── TMDB_Movie_analysis(OLD).ipynb  # Older version of the analysis notebook
+├── src/                              # Directory for source code
+│   ├── __pycache__/                  # Python cache directory (auto-generated)
+│   ├── __init__.py                   # Initializes the src directory as a Python package
+│   ├── pipeline.py                   # Pipeline script (if applicable, otherwise placeholder)
+│   └── tmdb_functions.py             # Duplicate of the main functions file (consider consolidating)
+├── tests/                            # Directory for tests (currently empty)
+├── .env                              # Environment file for storing API keys (not tracked in git)
+├── .gitignore                        # Git ignore file for excluding unnecessary files
+└── README.md                         # Project documentation (this file)
 ```
+
+**Note**: The `tmdb_functions.py` file appears in both `notebooks/` and `src/`. It’s recommended to keep only one copy (preferably in `src/`) to avoid duplication and potential inconsistencies. The `visualizations/` directory mentioned in the notebook for saving PNG files is not present in the screenshot; ensure it is created when running the notebook, or update the notebook to save visualizations in a different directory (e.g., `notebooks/`).
 
 ## Installation
 
 ### Prerequisites
+
 - **Python**: Version 3.8 or higher
-- **TMDB API Key**: Obtain a free API key from [TMDB](https://www.themoviedb.org/documentation/api).
+- **TMDB API Key**: Obtain a free API key from TMDB.
 - **Git**: For cloning the repository.
 - **Jupyter Notebook**: For running the interactive analysis.
 
-Required Python libraries (listed in `requirements.txt`):
+Required Python libraries (create a `requirements.txt` if not present):
+
 - `requests`
 - `pandas`
 - `matplotlib`
 - `urllib3`
 
 ### Setup Instructions
+
 1. **Clone the Repository**:
+
    ```bash
    git clone https://github.com/your-username/TMDB-Movie-Analysis.git
    cd TMDB-Movie-Analysis
    ```
 
 2. **Create a Virtual Environment** (optional but recommended):
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install Dependencies**:
+
+   If a `requirements.txt` file exists:
+
    ```bash
    pip install -r requirements.txt
    ```
 
+   If not, manually install the required libraries:
+
+   ```bash
+   pip install requests pandas matplotlib urllib3
+   ```
+
 4. **Set Up the TMDB API Key**:
-   - Create an environment variable named `api_key` with your TMDB API key.
+
+   - Store your TMDB API key in the `.env` file:
+
+     ```plaintext
+     api_key=your-api-key-here
+     ```
+
+   - Alternatively, set it as an environment variable:
      - On Linux/Mac:
+
        ```bash
        export api_key='your-api-key-here'
        ```
      - On Windows (Command Prompt):
+
        ```bash
        set api_key=your-api-key-here
        ```
-     - Alternatively, add the API key to a `.env` file (requires `python-dotenv`) or modify `tmdb_functions.py` to hardcode the key (not recommended).
 
-5. **Verify Setup**:
-   Ensure the TMDB API key is accessible by running:
+   - If using `.env`, ensure `python-dotenv` is installed (`pip install python-dotenv`) and modify `tmdb_functions.py` to load the key:
+
+     ```python
+     from dotenv import load_dotenv
+     load_dotenv()
+     ```
+
+5. **Verify Setup**: Ensure the TMDB API key is accessible by running:
+
    ```python
-   from tmdb_functions import get_api_key
+   from notebooks.tmdb_functions import get_api_key
    print(get_api_key())
    ```
 
 ## Usage
 
 ### Running the Jupyter Notebook
+
 1. Start Jupyter Notebook:
+
    ```bash
    jupyter notebook
    ```
-2. Open `TMDB_analysis(Modular).ipynb` in the browser.
+
+2. Navigate to the `notebooks/` directory and open `TMDB_analysis(Modular).ipynb` in the browser.
 3. Run the cells sequentially to:
    - Fetch raw movie data.
    - Clean and preprocess the data.
@@ -127,9 +170,11 @@ Required Python libraries (listed in `requirements.txt`):
    - Generate and save visualizations.
 
 ### Using the Python Module
-The `tmdb_functions.py` module can be imported into other Python scripts or projects. Example usage:
+
+The `tmdb_functions.py` module can be imported into other Python scripts or projects. Example usage (assuming you use the copy in `src/`):
+
 ```python
-from tmdb_functions import fetch_movie_data, clean_df, kpi_ranking, plot_revenue_vs_budget
+from src.tmdb_functions import fetch_movie_data, clean_df, kpi_ranking, plot_revenue_vs_budget
 
 # Fetch data for specific movie IDs
 movie_ids = [299534, 19995, 140607]  # Example IDs
@@ -147,14 +192,16 @@ plot_revenue_vs_budget(cleaned_data)
 ```
 
 ## Data Source
-The project uses the [TMDB API](https://www.themoviedb.org/documentation/api) to fetch movie metadata, including:
+
+The project uses the TMDB API to fetch movie metadata, including:
+
 - Movie details (title, budget, revenue, genres, release date, etc.).
-- Credits (cast and crew information).
-The API requires an API key, which must be set as an environment variable (`api_key`).
+- Credits (cast and crew information). The API requires an API key, which must be set as an environment variable (`api_key`).
 
 ## Key Components
 
 ### Data Fetching
+
 - **Function**: `fetch_movie_data(ids)`
 - **Description**: Retrieves movie details and credits for a list of TMDB movie IDs. Includes retry logic for handling API timeouts or errors.
 - **Output**: A `pandas` DataFrame with raw JSON data.
@@ -164,6 +211,7 @@ The API requires an API key, which must be set as an environment variable (`api_
   - Appends credits (cast and crew) to movie data.
 
 ### Data Cleaning
+
 - **Function**: `clean_df(df)`
 - **Description**: Processes raw TMDB data into a clean, analysis-ready DataFrame.
 - **Features**:
@@ -175,6 +223,7 @@ The API requires an API key, which must be set as an environment variable (`api_
   - Extracts cast size, crew size, and director names from credits.
 
 ### Analysis Functions
+
 - **KPI Ranking** (`kpi_ranking`): Ranks movies by any metric (e.g., revenue, ROI) with optional filtering.
 - **Advanced Search** (`advanced_search`): Filters movies by genres, cast, or directors, with sorting options.
 - **Franchise vs. Standalone** (`franchise_vs_standalone`): Compares mean revenue, ROI, budget, popularity, and ratings between franchise and standalone films.
@@ -182,6 +231,7 @@ The API requires an API key, which must be set as an environment variable (`api_
 - **Director Analysis** (`analyze_directors`): Evaluates directors by total movies directed, revenue, and ratings.
 
 ### Visualizations
+
 - **Revenue vs. Budget** (`plot_revenue_vs_budget`): Scatter plot showing the relationship between budget and revenue.
 - **ROI by Genre** (`plot_roi_by_genre`): Bar chart of mean ROI per genre.
 - **Popularity vs. Rating** (`plot_popularity_vs_rating`): Scatter plot comparing popularity and vote average.
@@ -189,14 +239,19 @@ The API requires an API key, which must be set as an environment variable (`api_
 - **Franchise vs. Standalone** (`plot_franchise_vs_standalone`): Bar plot comparing key metrics.
 
 ## Example Outputs
-- **Cleaned Data Sample** (`cleaned_movie_data.csv`):
+
+- **Cleaned Data Sample** (`notebooks/cleaned_movie_data.csv`):
+
   ```csv
   id,title,tagline,release_date,genres,belongs_to_collection,...
   299534,Avengers: Endgame,Avenge the fallen.,2019-04-24,Action|Adventure|Science Fiction,The Avengers Collection,...
   19995,Avatar,Enter the world of Pandora.,2009-12-15,Action|Adventure|Fantasy|Science Fiction,Avatar Collection,...
   ```
-- **Visualization**: `revenue_vs_budget.png` (scatter plot of budget vs. revenue).
-- **Analysis Output**: Top 5 movies by ROI:
+
+- **Visualization**: The notebook saves visualizations as PNG files (e.g., `revenue_vs_budget.png`). Since I do not have a `visualizations/` directory it will be be saved in the `notebooks/` directory or need to be adjusted in the notebook code.
+
+- **Analysis Output**: Top 5 movies by ROI (example):
+
   ```plaintext
   title                      roi
   Jurassic World: Fallen Kingdom  6.948
@@ -207,7 +262,9 @@ The API requires an API key, which must be set as an environment variable (`api_
   ```
 
 ## Contributing
+
 Contributions are welcome! To contribute:
+
 1. Fork the repository.
 2. Create a feature branch (`git checkout -b feature/your-feature`).
 3. Commit your changes (`git commit -m "Add your feature"`).
@@ -216,19 +273,19 @@ Contributions are welcome! To contribute:
 
 Please ensure your code follows PEP 8 style guidelines and includes appropriate tests.
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
-- [The Movie Database (TMDB)](https://www.themoviedb.org/) for providing the API.
+
+- The Movie Database (TMDB) for providing the API.
 - Python libraries: `pandas`, `requests`, `matplotlib`, `urllib3`.
 - The open-source community for inspiration and resources.
+- AI tools(CHATGPT, GROK and DEEPSEEK) 
 
 ## Contact
+
 For questions or feedback, please contact:
-- **Your Name**: [your.email@example.com](mailto:your.email@example.com)
-- **GitHub**: [your-username](https://github.com/your-username)
+
+- **Your Name**: hakeemwikireh@gmail.com
+- **GitHub**: Hakeemwiki
 
 ---
-
-This README follows best practices for open-source project documentation, providing clear instructions, comprehensive details, and a professional structure. Update the placeholders (e.g., `your-username`, `your.email@example.com`) with your actual details before uploading to GitHub.
