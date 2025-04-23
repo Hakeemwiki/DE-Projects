@@ -687,3 +687,30 @@ def plot_popularity_vs_rating(df: DataFrame) -> None:
     plt.savefig('popularity_vs_rating.png')
     plt.close()
 
+
+def plot_yearly_box_office(df: DataFrame) -> None:
+    """
+    Visualize Yearly Trends in Box Office Performance using a line plot.
+    
+    Args:
+        df (DataFrame): PySpark DataFrame with cleaned movie data
+    """
+    # Extract year from release_date
+    df_yearly = df.withColumn('year', year(to_date(col('release_date'))))\
+                  .filter(col('revenue_millions').isNotNull())
+    
+    # Group by year and calculate total revenue
+    yearly_revenue = df_yearly.groupBy('year')\
+                             .agg(spark_sum('revenue_millions').alias('total_revenue'))\
+                             .orderBy('year')\
+                             .toPandas()
+    
+    plt.figure(figsize=(12, 6))
+    plt.plot(yearly_revenue['year'], yearly_revenue['total_revenue'], marker='o')
+    plt.title("Yearly Trends in Box Office Performance")
+    plt.xlabel("Year")
+    plt.ylabel("Total Revenue (Millions USD)")
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('yearly_box_office.png')
+    plt.close()
