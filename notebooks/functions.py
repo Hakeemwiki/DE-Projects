@@ -639,3 +639,31 @@ def plot_revenue_vs_budget(df: DataFrame) -> None:
     plt.close()
 
 
+def plot_roi_by_genre(df: DataFrame) -> None:
+    """
+    Visualize Mean ROI by Genre using a bar chart.
+    
+    Args:
+        df (DataFrame): PySpark DataFrame with cleaned movie data
+    """
+    # Split and explode genres
+    df_genres = df.select('roi', explode(split(col('genre_names'), '\|')).alias('genre'))\
+                  .filter(col('roi').isNotNull())
+    
+    # Calculate mean ROI per genre
+    roi_by_genre = df_genres.groupBy('genre')\
+                            .agg(mean('roi').alias('mean_roi'))\
+                            .orderBy(col('mean_roi').desc())\
+                            .toPandas()
+    
+    plt.figure(figsize=(12, 6))
+    plt.bar(roi_by_genre['genre'], roi_by_genre['mean_roi'], color='skyblue')
+    plt.title("Mean ROI by Genre")
+    plt.xlabel("Genre")
+    plt.ylabel("Mean ROI (Revenue / Budget)")
+    plt.xticks(rotation=45, ha='right')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('roi_by_genre.png')
+    plt.close()
+
