@@ -397,3 +397,40 @@ def clean_movie_data(df: DataFrame) -> DataFrame:
     # Returns the cleaned DataFrame.
 
 
+# ------------------------------------------------------------------------
+# ANALYSIS FUNCTIONS
+# ------------------------------------------------------------------------
+
+def kpi_ranking(df: DataFrame, metric: str, n: int = 10, top: bool = True, 
+                filter_col: Optional[str] = None, filter_val: Optional[float] = None) -> DataFrame:
+    """
+    Rank movies by a specified metric with optional filtering.
+    
+    Args:
+        df (DataFrame): Input DataFrame
+        metric (str): Column name to rank by
+        n (int): Number of results to return
+        top (bool): True for top ranks, False for bottom
+        filter_col (str, optional): Column to filter on
+        filter_val (float, optional): Minimum value for filter
+    
+    Returns:
+        DataFrame: Ranked results
+    """
+    data = df
+    # Assigns the input DataFrame to a variable for processing.
+    
+    if filter_col and filter_val is not None:
+        data = data.filter(col(filter_col) >= filter_val)
+    # Applies a filter if both filter_col and filter_val are provided.
+    # filter: Keeps rows where the condition is true (e.g., revenue_millions >= 100).
+    
+    order = col(metric).desc() if top else col(metric).asc()
+    # Sets the sort order: descending for top ranks, ascending for bottom.
+    # desc: Sorts in descending order (highest first).
+    # asc: Sorts in ascending order (lowest first).
+    
+    return data.orderBy(order).limit(n)
+    # Sorts the DataFrame by the metric and returns the top/bottom n rows.
+    # orderBy: Sorts the DataFrame.
+    # limit: Restricts the output to n rows.
