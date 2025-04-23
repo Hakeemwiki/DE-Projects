@@ -9,6 +9,7 @@ from pyspark.sql import SparkSession, Row, DataFrame
 # Row: Represents a row of data in a DataFrame, used to structure API data.
 # DataFrame: PySpark’s distributed data structure, like a table in a database.
 
+import matplotlib.pyplot as plt
 from pyspark.sql.functions import col, array_join, expr, size, when, to_date, mean, sum as spark_sum, count as spark_count, lit, explode, split
 # col: References a DataFrame column for operations (e.g., filtering, sorting).
 # array_join: Joins array elements into a string (e.g., genres into "Action|Adventure").
@@ -612,3 +613,29 @@ def analyze_directors(df: DataFrame, sort_by: Optional[str] = None, ascending: b
     
     return director_stat
     # Returns the aggregated DataFrame with director statistics.
+
+# ------------------------------------------------------------------------
+# VISUALIZATIONS
+# ------------------------------------------------------------------------
+
+def plot_revenue_vs_budget(df: DataFrame) -> None:
+    """
+    Visualize Revenue vs. Budget Trends using a scatter plot.
+    
+    Args:
+        df (DataFrame): PySpark DataFrame with cleaned movie data
+    """
+    # Collect necessary columns to Pandas
+    pdf = df.select('budget_millions', 'revenue_millions').dropna().toPandas()
+    
+    plt.figure(figsize=(10, 6))
+    plt.scatter(pdf['budget_millions'], pdf['revenue_millions'], alpha=0.5)
+    plt.title("Revenue vs. Budget Trends")
+    plt.xlabel("Budget (Millions USD)")
+    plt.ylabel("Revenue (Millions USD)")
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('revenue_vs_budget.png')
+    plt.close()
+
+
