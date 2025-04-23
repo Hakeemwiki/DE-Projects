@@ -23,3 +23,37 @@ from pyspark.sql.functions import col, array_join, expr, size, when, to_date, me
 from pyspark.sql.types import *
 from typing import * # Type hints for better code clarity and IDE support.
 from dotenv import load_dotenv
+
+# ------------------------------------------------------------------------
+# CONFIGURATION
+# ------------------------------------------------------------------------
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configures logging to show INFO-level messages and above (INFO, WARNING, ERROR).
+
+load_dotenv()
+
+TMDB_API_KEY = os.getenv('api_key')
+
+if not TMDB_API_KEY:
+    raise ValueError("API_KEY environment variable not set")
+
+TMDB_URL = "https://api.themoviedb.org/3/movie/{id}?api_key={api}&append_to_response=credits" 
+# append_to_response=credits: Includes cast and crew data in the response.
+
+JSON_ARRAY_FIELDS = ['genres', 'production_companies', 'production_countries', 'spoken_languages']
+# Lists fields from the TMDB API response that should be arrays (lists).
+# Used to ensure these fields are processed as lists, even if malformed.
+
+# Initialize Spark session
+spark = SparkSession.builder \
+    .appName("MovieDataAnalysis") \
+    .config("spark.driver.memory", "4g") \
+    .getOrCreate()
+
+# config: Allocates 4GB of memory to the driver (controls Spark execution).
+
+
+
+
+
