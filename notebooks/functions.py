@@ -128,5 +128,38 @@ def build_schema() -> StructType:
     # Returns a StructType combining all fields for the DataFrame.
 
 
+# ------------------------------------------------------------------------
+# DATA FETCHING
+# ------------------------------------------------------------------------
+
+def get_session_with_retries(total_retries: int = 3, backoff: float = 0.3) -> requests.Session:
+    """
+    Create a requests session with retry configuration for handling transient API errors.
+    
+    Args:
+        total_retries (int): Number of retry attempts
+        backoff (float): Backoff factor for retry delays
+    
+    Returns:
+        requests.Session: Configured session object
+    """
+    session = requests.Session()
+    # Creates a new HTTP session for making API requests.
+
+    retry = Retry(
+        total = total_retries,
+        backoff_factor=backoff,
+        status_forcelist=[429, 500, 502, 503, 504]
+    )
+    # Configures retries for specific HTTP errors (e.g., 429: Too Many Requests).
+    # total_retries: Try up to 3 times.
+    # backoff_factor: Delay between retries (0.3s, 0.6s, 1.2s).
+    # status_forcelist: Retry on these HTTP status codes.
+
+    session.mount('htttps://', HTTPAdapter(max_retries=retry))     # Attaches the retry logic to HTTPS requests.
+
+    return session
+
+
 
 
