@@ -526,3 +526,47 @@ def franchise_vs_standalone(df: DataFrame) -> DataFrame:
     return franchise_stats.union(standalone_stats)
     # union: Stacks the two DataFrames vertically, creating a single table with both groups.
     # Result has columns: Group, Mean_Revenue, Mean_ROI, Mean_Budget, Mean_Popularity, Mean_Rating, Movie_Count.
+
+
+# ------------------------------------------------------------------------
+# ANALYZE FRANCHISE AND DIRECTORS
+# ------------------------------------------------------------------------
+
+def analyze_franchise(df: DataFrame, sort_by: Optional[str] = None, ascending: bool = False) -> DataFrame:
+    """
+    Analyze franchises by aggregating movie counts and financial metrics.
+    
+    Args:
+        df (DataFrame): Input DataFrame with cleaned movie data
+        sort_by (str, optional): Column to sort by
+        ascending (bool): Sort order (False for descending, True for ascending)
+    
+    Returns:
+        DataFrame: Aggregated stats for franchises
+    """
+    # Filter franchise movies (where collection_name is not null)
+    franchise = df.filter(col('collection_name').isNotNull())
+    # Selects only movies that belong to a franchise (have a collection name).
+    
+    # Group by collection_name and compute aggregations
+    franchise_stat = franchise.groupBy('collection_name').agg(
+        spark_count('id').alias('total_movies'),               # Count of movies in the franchise
+        spark_sum('budget_millions').alias('total_budget_millions'),  # Sum of budgets
+        mean('budget_millions').alias('budget_mean'),          # Average budget
+        spark_sum('revenue_millions').alias('total_revenue_millions'),  # Sum of revenues
+        mean('revenue_millions').alias('revenue_mean'),        # Average revenue
+        mean('vote_average').alias('mean_rating'),             # Average rating
+        mean('roi').alias('mean_roi')                         # Average ROI
+    )
+    # groupBy: Groups rows by collection_name (e.g., "Avengers Collection").
+    # agg: Computes multiple aggregations for each group.
+    # alias: Names the output columns to match the desired output.
+    
+    # Sort the results if sort_by is provided
+    if sort_by:
+        franchise_stat = franchise_stat.orderBy(col(sort_by).asc() if ascending else col(sort_by).desc())
+    # orderBy: Sorts the DataFrame by the specified column.
+    # asc/desc: Controls sort order (ascending or descending).
+    
+    return franchise_stat
+    # Returns the aggregated DataFrame with franchise statistics.
