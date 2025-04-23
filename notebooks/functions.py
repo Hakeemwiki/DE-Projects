@@ -9,6 +9,7 @@ from pyspark.sql import SparkSession, Row, DataFrame
 # Row: Represents a row of data in a DataFrame, used to structure API data.
 # DataFrame: PySpark’s distributed data structure, like a table in a database.
 
+import pandas as pd
 import matplotlib.pyplot as plt
 from pyspark.sql.functions import col, array_join, expr, size, when, to_date, mean, sum as spark_sum, count as spark_count, lit, explode, split, year
 # col: References a DataFrame column for operations (e.g., filtering, sorting).
@@ -767,3 +768,96 @@ def plot_franchise_vs_standalone(df: DataFrame) -> None:
     plt.close()
 
 
+if __name__ == "__main__":
+    # Runs the following code only if the script is executed directly (not imported).
+    
+    # Movie IDs to fetch
+    movie_ids = [
+        0, 299534, 19995, 140607, 299536, 597, 135397,
+        420818, 24428, 168259, 99861, 284054, 12445,
+        181808, 330457, 351286, 109445, 321612, 260513
+    ]
+    # List of TMDB movie IDs to fetch (note: 0 is likely invalid and will be skipped).
+    
+    # Fetch and clean data
+    schema = build_schema()
+    # Creates the schema for the DataFrame.
+    
+    raw_df = fetch_movie_data(movie_ids, schema)
+    # Fetches movie data from TMDB and creates a raw DataFrame.
+    
+    cleaned_df = clean_movie_data(raw_df)
+    # Cleans and transforms the raw DataFrame.
+    
+    # Cache the cleaned DataFrame for performance
+    cleaned_df.cache()
+    # Stores the cleaned DataFrame in memory for faster access in subsequent operations.
+    # Useful for repeated queries (e.g., ranking, searching).
+    
+    # Basic exploration
+    print("Data Schema:")
+    cleaned_df.printSchema()
+    # Prints the schema of the cleaned DataFrame, showing column names and types.
+    
+    print("\nSample Data:")
+    cleaned_df.show(5, truncate=False)
+    # Displays the first 5 rows of the cleaned DataFrame.
+    # truncate=False: Shows full column values without truncation.
+    
+    # Example analysis
+    print("\nTop 5 Movies by Revenue:")
+    kpi_ranking(cleaned_df, 'revenue_millions', n=5).select(
+        'title', 'revenue_millions', 'budget_millions'
+    ).show(truncate=False)
+    # Ranks the top 5 movies by revenue_millions.
+    # select: Chooses specific columns to display.
+    # show: Prints the results.
+    
+    print("\nMovies with Action Genre:")
+    advanced_search(cleaned_df, genre_keywords='Action', sort_by='revenue_millions').select(
+        'title', 'genre_names', 'revenue_millions'
+    ).show(truncate=False)
+    # Searches for movies with "Action" in genres, sorted by revenue.
+    # Displays title, genres, and revenue.
+    
+    # Sample runs of new analysis functions
+    print("\nFranchise vs Standalone Comparison:")
+    franchise_vs_standalone(cleaned_df).show(truncate=False)
+    # Runs franchise_vs_standalone to compare franchise and standalone movies.
+    # Outputs a table with metrics like Mean_Revenue, Mean_ROI, and Movie_Count for both groups.
+    # show: Displays the full table without truncating column values.
+    
+    print("\nTop Franchises by Total Revenue:")
+    analyze_franchise(cleaned_df, sort_by='total_revenue_millions').show(5, truncate=False)
+    # Runs analyze_franchise to aggregate metrics for franchises.
+    # sort_by='total_revenue_millions': Sorts by total revenue in descending order (default ascending=False).
+    # show(5): Displays the top 5 franchises to keep output concise.
+    
+    print("\nTop Directors by Total Revenue:")
+    analyze_directors(cleaned_df, sort_by='total_revenue_millions').show(5, truncate=False)
+    # Runs analyze_directors to aggregate metrics for directors of franchise movies.
+    # sort_by='total_revenue_millions': Sorts by total revenue in descending order.
+    # show(5): Displays the top 5 directors to keep output concise.
+    
+     # Generate visualizations
+    print("\nGenerating visualizations...")
+    plot_revenue_vs_budget(cleaned_df)
+    print("Saved revenue_vs_budget.png")
+    
+    plot_roi_by_genre(cleaned_df)
+    print("Saved roi_by_genre.png")
+    
+    plot_popularity_vs_rating(cleaned_df)
+    print("Saved popularity_vs_rating.png")
+    
+    plot_yearly_box_office(cleaned_df)
+    print("Saved yearly_box_office.png")
+    
+    plot_franchise_vs_standalone(cleaned_df)
+    print("Saved franchise_vs_standalone.png")
+    # Clean up
+    spark.stop()
+    # Stops the SparkSession, releasing resources.
+    
+    print("Analysis complete!")
+    # Prints a final message to indicate the program has finished.
