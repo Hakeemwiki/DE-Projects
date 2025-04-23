@@ -474,3 +474,55 @@ def advanced_search(df: DataFrame, genre_keywords: Optional[str] = None,
     
     return data
     # Returns the filtered and sorted DataFrame.
+
+
+# ------------------------------------------------------------------------
+# FRANCHISE VERSUS STANDALONE
+# ------------------------------------------------------------------------
+
+def franchise_vs_standalone(df: DataFrame) -> DataFrame:
+    """
+    Compare franchise vs. standalone movies by computing mean metrics.
+    
+    Args:
+        df (DataFrame): Input DataFrame with cleaned movie data
+    
+    Returns:
+        DataFrame: Comparison table with metrics for franchise and standalone movies
+    """
+    # Filter franchise movies (where collection_name is not null)
+    franchise = df.filter(col('collection_name').isNotNull())
+    # isNotNull: Selects rows where collection_name has a value (part of a franchise).
+    
+    # Filter standalone movies (where collection_name is null)
+    standalone = df.filter(col('collection_name').isNull())
+    # isNull: Selects rows where collection_name is missing (not part of a franchise).
+    
+    # Compute aggregates for franchise movies
+    franchise_stats = franchise.agg(
+        mean('revenue_millions').alias('Mean_Revenue'),  # Average revenue in millions
+        mean('roi').alias('Mean_ROI'),                  # Average return on investment
+        mean('budget_millions').alias('Mean_Budget'),   # Average budget in millions
+        mean('popularity').alias('Mean_Popularity'),    # Average popularity score
+        mean('vote_average').alias('Mean_Rating'),      # Average user rating
+        spark_count('*').alias('Movie_Count')           # Count of franchise movies
+    ).withColumn('Group', lit('Franchise'))             # Add a column labeling the group
+    # agg: Computes multiple aggregations in one operation.
+    # alias: Names the output columns for clarity.
+    # lit: Creates a column with a constant value ("Franchise").
+    
+    # Compute aggregates for standalone movies
+    standalone_stats = standalone.agg(
+        mean('revenue_millions').alias('Mean_Revenue'),  # Average revenue in millions
+        mean('roi').alias('Mean_ROI'),                  # Average return on investment
+        mean('budget_millions').alias('Mean_Budget'),   # Average budget in millions
+        mean('popularity').alias('Mean_Popularity'),    # Average popularity score
+        mean('vote_average').alias('Mean_Rating'),      # Average user rating
+        spark_count('*').alias('Movie_Count')           # Count of standalone movies
+    ).withColumn('Group', lit('Standalone'))            # Add a column labeling the group
+    # Same aggregations as franchise_stats, but for standalone movies.
+    
+    # Combine the two DataFrames
+    return franchise_stats.union(standalone_stats)
+    # union: Stacks the two DataFrames vertically, creating a single table with both groups.
+    # Result has columns: Group, Mean_Revenue, Mean_ROI, Mean_Budget, Mean_Popularity, Mean_Rating, Movie_Count.
