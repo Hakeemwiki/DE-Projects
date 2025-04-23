@@ -667,3 +667,23 @@ def plot_roi_by_genre(df: DataFrame) -> None:
     plt.savefig('roi_by_genre.png')
     plt.close()
 
+def plot_popularity_vs_rating(df: DataFrame) -> None:
+    """
+    Visualize Popularity vs. Rating using a scatter plot.
+    
+    Args:
+        df (DataFrame): PySpark DataFrame with cleaned movie data
+    """
+    # Collect necessary columns to Pandas
+    pdf = df.select('popularity', 'vote_average').dropna().toPandas()
+    
+    plt.figure(figsize=(10, 6))
+    plt.scatter(pdf['popularity'], pdf['vote_average'], alpha=0.5)
+    plt.title("Popularity vs. Rating")
+    plt.xlabel("Popularity")
+    plt.ylabel("Rating (Vote Average)")
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('popularity_vs_rating.png')
+    plt.close()
+
