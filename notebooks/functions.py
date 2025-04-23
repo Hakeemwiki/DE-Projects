@@ -266,6 +266,134 @@ def fetch_movie_data(movie_ids: List[int], schema: StructType) -> DataFrame:
     return spark.createDataFrame(raw_records, schema)
     # Creates a Spark DataFrame from the list of Row objects, applying the provided schema.
 
-
+def clean_movie_data(df: DataFrame) -> DataFrame:
+    """
+    Clean and transform the raw movie DataFrame, processing JSON-like columns and adding derived metrics.
+    
+    Args:
+        df (DataFrame): Raw movie DataFrame
+    
+    Returns:
+        DataFrame: Cleaned and transformed DataFrame
+    """
+    # Process collection name
+    cleaned_df = df.withColumn(
+        'collection_name',
+        col('belongs_to_collection').getItem('name')
+    )
+    # Extracts the 'name' field from the belongs_to_collection map (e.g., "Avengers Collection").
+    # withColumn: Adds or replaces a column in the DataFrame.
+    # col: References the belongs_to_collection column.
+    # getItem: Accesses a key in a MapType column.
+    
+    # Process array fields to pipe-separated strings
+    array_transforms = {
+        'genre_names': 'genres',
+        'production_companies_str': 'production_companies',
+        'production_countries_str': 'production_countries',
+        'spoken_languages_str': 'spoken_languages'
+    }
+    # Dictionary mapping output column names to input array columns.
+    
+    for output_col, input_col in array_transforms.items():
+        cleaned_df = cleaned_df.withColumn(
+            output_col,
+            array_join(expr(f'transform({input_col}, x -> x.name)'), '|')
+        )
+    # Loops through array fields to convert them to strings.
+    # expr: Uses SQL-like syntax to transform each array element.
+    # transform: Applies a function to each element (x -> x.name extracts the 'name' field).
+    # array_join: Joins the resulting names with '|' (e.g., "Action|Adventure").
+    
+    # Process credits
+    cleaned_df = cleaned_df \
+        .withColumn(
+            'cast_names',
+            array_join(expr('transform(credits.cast, x -> x.name)'), '|')
+        ) \
+        .withColumn(
+            'cast_size',
+            size(col('credits.cast'))
+        ) \
+        .withColumn(
+            'director',
+            array_join(
+                expr("transform(filter(credits.crew, x -> x.job = 'Director'), x -> x.name)"),
+                '|'
+            )
+        ) \
+        .withColumn(
+            'crew_size',
+            size(col('credits.crew'))
+        )
+    # Processes the credits struct:
+    # - cast_names: Joins cast names with '|' (e.g., "Robert Downey Jr.|Chris Evans").
+    # - cast_size: Counts the number of cast members.
+    # - director: Joins names of crew members with job="Director".
+    # - crew_size: Counts the number of crew members.
+    # filter: Selects crew members where job is "Director".
+    # \: Line continuation for readability.
+    
+    # Convert data types and handle zeros
+    cleaned_df = cleaned_df \
+        .withColumn('budget', when(col('budget') == 0, None).otherwise(col('budget'))) \
+        .withColumn('revenue', when(col('revenue') == 0, None).otherwise(col('revenue'))) \
+        .withColumn('runtime', when(col('runtime') == 0, None).otherwise(col('runtime'))) \
+        .withColumn('release_date', to_date(col('release_date')))
+    # Cleans data:
+    # - Replaces 0 with NULL for budget, revenue, runtime (0 often means missing data).
+    # - Converts release_date string to a date type (e.g., "2019-04-24" to date).
+    # when: If condition is true, sets value; otherwise, keeps original.
+    
+    # Calculate financial metrics
+    cleaned_df = cleaned_df \
+        .withColumn('budget_millions', col('budget') / 1e6) \
+        .withColumn('revenue_millions', col('revenue') / 1e6) \
+        .withColumn('profit', col('revenue_millions') - col('budget_millions')) \
+        .withColumn('roi', col('revenue_millions') / col('budget_millions'))
+    # Adds derived columns:
+    # - budget_millions: Budget in millions (divides by 1,000,000).
+    # - revenue_millions: Revenue in millions.
+    # - profit: Revenue minus budget (in millions).
+    # - roi: Return on investment (revenue/budget).
+    
+    # Standardize specific fields
+    cleaned_df = cleaned_df \
+        .withColumn(
+            'genre_names',
+            when(
+                col('genre_names').isin(
+                    'Adventure|Science Fiction|Action',
+                    'Adventure|Action|Science Fiction'
+                ),
+                'Action|Adventure|Science Fiction'
+            ).otherwise(col('genre_names'))
+        ) \
+        .withColumn(
+            'production_countries_str',
+            when(
+                col('production_countries_str') == 'United Kingdom|United States of America',
+                'United States of America|United Kingdom'
+            ).otherwise(col('production_countries_str'))
+        )
+    # Standardizes data for consistency:
+    # - genre_names: Unifies similar genre combinations into one format.
+    # - production_countries_str: Reorders UK|US to US|UK.
+    # isin: Checks if a value is in a list.
+    # otherwise: Keeps original value if condition is false.
+    
+    # Select final columns
+    desired_columns = [
+        'id', 'title', 'tagline', 'release_date', 'genre_names', 'collection_name',
+        'original_language', 'budget_millions', 'revenue_millions', 'production_companies_str',
+        'production_countries_str', 'vote_count', 'vote_average', 'popularity', 'runtime',
+        'overview', 'spoken_languages_str', 'poster_path', 'cast_names', 'cast_size',
+        'director', 'crew_size', 'profit', 'roi'
+    ]
+    # Lists the columns to keep in the final DataFrame.
+    
+    return cleaned_df.select([c for c in desired_columns if c in cleaned_df.columns])
+    # Selects only the desired columns, filtering out any that don’t exist.
+    # Returns the cleaned DataFrame.
 
 
