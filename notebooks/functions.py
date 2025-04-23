@@ -10,7 +10,7 @@ from pyspark.sql import SparkSession, Row, DataFrame
 # DataFrame: PySpark’s distributed data structure, like a table in a database.
 
 import matplotlib.pyplot as plt
-from pyspark.sql.functions import col, array_join, expr, size, when, to_date, mean, sum as spark_sum, count as spark_count, lit, explode, split
+from pyspark.sql.functions import col, array_join, expr, size, when, to_date, mean, sum as spark_sum, count as spark_count, lit, explode, split, year
 # col: References a DataFrame column for operations (e.g., filtering, sorting).
 # array_join: Joins array elements into a string (e.g., genres into "Action|Adventure").
 # expr: Allows SQL-like expressions for complex transformations.
@@ -714,3 +714,56 @@ def plot_yearly_box_office(df: DataFrame) -> None:
     plt.tight_layout()
     plt.savefig('yearly_box_office.png')
     plt.close()
+
+
+def plot_franchise_vs_standalone(df: DataFrame) -> None:
+    """
+    Visualize Comparison of Franchise vs. Standalone Success using a bar plot.
+    
+    Args:
+        df (DataFrame): PySpark DataFrame with cleaned movie data
+    """
+    # Separate franchise and standalone
+    franchise = df.filter(col('collection_name').isNotNull())
+    standalone = df.filter(col('collection_name').isNull())
+    
+    # Calculate metrics
+    franchise_stats = franchise.agg(
+        mean('revenue_millions').alias('Mean_Revenue'),
+        mean('budget_millions').alias('Mean_Budget'),
+        mean('vote_average').alias('Mean_Rating')
+    ).toPandas()
+    
+    standalone_stats = standalone.agg(
+        mean('revenue_millions').alias('Mean_Revenue'),
+        mean('budget_millions').alias('Mean_Budget'),
+        mean('vote_average').alias('Mean_Rating')
+    ).toPandas()
+    
+    # Prepare data for plotting
+    comparison_df = pd.DataFrame({
+        'Franchise': [
+            franchise_stats['Mean_Revenue'][0],
+            franchise_stats['Mean_Budget'][0],
+            franchise_stats['Mean_Rating'][0]
+        ],
+        'Standalone': [
+            standalone_stats['Mean_Revenue'][0],
+            standalone_stats['Mean_Budget'][0],
+            standalone_stats['Mean_Rating'][0]
+        ]
+    }, index=['Mean Revenue', 'Mean Budget', 'Mean Rating'])
+    
+    # Plot
+    plt.figure(figsize=(10, 6))
+    comparison_df.plot(kind='bar')
+    plt.title("Franchise vs. Standalone Success")
+    plt.xlabel("Metric")
+    plt.ylabel("Value")
+    plt.xticks(rotation=0)
+    plt.legend(title="Movie Type")
+    plt.tight_layout()
+    plt.savefig('franchise_vs_standalone.png')
+    plt.close()
+
+
