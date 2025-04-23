@@ -570,3 +570,45 @@ def analyze_franchise(df: DataFrame, sort_by: Optional[str] = None, ascending: b
     
     return franchise_stat
     # Returns the aggregated DataFrame with franchise statistics.
+
+def analyze_directors(df: DataFrame, sort_by: Optional[str] = None, ascending: bool = False) -> DataFrame:
+    """
+    Analyze directors of franchise movies by aggregating movie counts and metrics.
+    
+    Args:
+        df (DataFrame): Input DataFrame with cleaned movie data
+        sort_by (str, optional): Column to sort by
+        ascending (bool): Sort order (False for descending, True for ascending)
+    
+    Returns:
+        DataFrame: Aggregated stats for directors of franchise movies
+    """
+    # Filter franchise movies
+    franchise = df.filter(col('collection_name').isNotNull())
+    # Selects only franchise movies to match the Pandas version’s logic.
+    
+    # Split director column to handle multiple directors
+    df_directors = franchise.withColumn('director', explode(split(col('director'), '\|')))
+    # split: Splits the director column (e.g., "Director1|Director2") into an array.
+    # explode: Creates a new row for each director in the array, duplicating other columns.
+    # This handles cases where a movie has multiple directors.
+    
+    # Group by director and compute aggregations
+    director_stat = df_directors.groupBy('director').agg(
+        spark_count('id').alias('total_movies_directed'),      # Count of movies directed
+        spark_sum('revenue_millions').alias('total_revenue_millions'),  # Sum of revenues
+        mean('revenue_millions').alias('mean_revenue'),        # Average revenue
+        mean('vote_average').alias('mean_rating'),             # Average rating
+        mean('roi').alias('mean_roi')                         # Average ROI
+    ).filter(col('director') != '')                           # Remove empty director names
+    # groupBy: Groups rows by director name.
+    # agg: Computes aggregations for each director.
+    # filter: Excludes rows with empty director names (e.g., from malformed data).
+    
+    # Sort the results if sort_by is provided
+    if sort_by:
+        director_stat = director_stat.orderBy(col(sort_by).asc() if ascending else col(sort_by).desc())
+    # orderBy: Sorts the DataFrame by the specified column.
+    
+    return director_stat
+    # Returns the aggregated DataFrame with director statistics.
