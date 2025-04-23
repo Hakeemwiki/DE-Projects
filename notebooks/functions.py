@@ -434,3 +434,43 @@ def kpi_ranking(df: DataFrame, metric: str, n: int = 10, top: bool = True,
     # Sorts the DataFrame by the metric and returns the top/bottom n rows.
     # orderBy: Sorts the DataFrame.
     # limit: Restricts the output to n rows.
+
+
+def advanced_search(df: DataFrame, genre_keywords: Optional[str] = None,
+                   cast_keywords: Optional[str] = None, director_keywords: Optional[str] = None,
+                   sort_by: Optional[str] = None, ascending: bool = True) -> DataFrame:
+    """
+    Search movies based on keywords in genres, cast, and director fields.
+    
+    Args:
+        df (DataFrame): Input DataFrame
+        genre_keywords (str, optional): Genre keywords to search
+        cast_keywords (str, optional): Cast keywords to search
+        director_keywords (str, optional): Director keywords to search
+        sort_by (str, optional): Column to sort by
+        ascending (bool): Sort order
+    
+    Returns:
+        DataFrame: Filtered and sorted results
+    """
+    data = df
+    # Assigns the input DataFrame to a variable for processing.
+    
+    if genre_keywords:
+        data = data.filter(col('genre_names').contains(genre_keywords))
+    # Filters rows where genre_names contains the specified keywords (e.g., "Action").
+    
+    if cast_keywords:
+        data = data.filter(col('cast_names').contains(cast_keywords))
+    # Filters rows where cast_names contains the specified keywords (e.g., "Robert").
+    
+    if director_keywords:
+        data = data.filter(col('director').contains(director_keywords))
+    # Filters rows where director contains the specified keywords (e.g., "Nolan").
+    
+    if sort_by:
+        data = data.orderBy(col(sort_by).asc() if ascending else col(sort_by).desc())
+    # Sorts the DataFrame by the specified column, ascending or descending.
+    
+    return data
+    # Returns the filtered and sorted DataFrame.
