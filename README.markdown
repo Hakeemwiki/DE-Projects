@@ -276,23 +276,6 @@ plt.close()
   +----------+-------------+---------+-------------+-----------------+------------+------------+
   ```
 
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -m "Add your feature"`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
-
-
-## Acknowledgements
-
-- The Movie Database (TMDB) for providing the API.
-- Apache Spark and PySpark for distributed data processing.
-- Python libraries: `pyspark`, `requests`, `pandas`, `matplotlib`, `urllib3`, `python-dotenv`.
-- The open-source community for inspiration and resources.
 
 ## Contact
 
