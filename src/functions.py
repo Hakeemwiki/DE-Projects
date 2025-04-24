@@ -821,15 +821,19 @@ if __name__ == "__main__":
      # Generate visualizations
     print("\nGenerating visualizations...")
     plot_revenue_vs_budget(cleaned_df)
+    print("Saved revenue_vs_budget.png")
     
     plot_roi_by_genre(cleaned_df)
+    print("Saved roi_by_genre.png")
     
     plot_popularity_vs_rating(cleaned_df)
+    print("Saved popularity_vs_rating.png")
     
     plot_yearly_box_office(cleaned_df)
+    print("Saved yearly_box_office.png")
     
     plot_franchise_vs_standalone(cleaned_df)
-
+    print("Saved franchise_vs_standalone.png")
     # Clean up
     spark.stop()
     # Stops the SparkSession, releasing resources.
