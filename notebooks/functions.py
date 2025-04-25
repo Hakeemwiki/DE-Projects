@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 # CONFIGURATION
 # ------------------------------------------------------------------------
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='/Users/hakeemwikireh/Desktop/PySpark Project/DE-Projects/notebooks/movies_analysis.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # Configures logging to show INFO-level messages and above (INFO, WARNING, ERROR).
 
 load_dotenv()
