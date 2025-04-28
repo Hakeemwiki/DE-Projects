@@ -41,23 +41,32 @@ def write_csv(filename, rows):
     """
     Write multiple events into a single CSV file
     """
+
+    #Ensure the data directory exists
+    os.makedirs('data', exist_ok=True)
     filepath = os.path.join('data', filename)
-    with open(filepath, mode='w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=[
-            'user_id', 'user_name', 'user_email', 'event_type',
-            'product_id', 'product_name', 'product_category', 'product_price', 'event_time'
-        ])
-        writer.writeheader()
-        writer.writerows(rows)
+    try:
+        with open(filepath, mode='w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=[
+                'user_id', 'user_name', 'user_email', 'event_type',
+                'product_id', 'product_name', 'product_category', 'product_price', 'event_time'
+            ])
+            writer.writeheader()
+            writer.writerows(rows)
+    except Exception as e:
+        print(f"Error writing {filename}: {e}")
 
 
 if __name__ == '__main__':
-    while True:
-        # Generate a random number of events (5-15 events per file)
-        events = [generate_event() for _ in range(random.randint(5, 15))]
-        #Filename with timestamp
-        filename = f"events_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
-        write_csv(filename, events)
-        print(f"Generated {filename}")
-        time.sleep(10) #wait 5 seconds then create next file
+    try:
+        while True:
+            # Generate a random number of events (5-15 events per file)
+            events = [generate_event() for _ in range(random.randint(5, 15))]
+            #Filename with timestamp
+            filename = f"events_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+            write_csv(filename, events)
+            print(f"Generated {filename}")
+            time.sleep(10) #wait 5 seconds then create next file
+    except KeyboardInterrupt:
+        print("Stopped by user")
         
