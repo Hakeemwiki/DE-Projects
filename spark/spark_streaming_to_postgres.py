@@ -36,6 +36,17 @@ def write_to_postgres(batch_df, batch_id):
         .option('dbtable', 'events') \
         .option('user', "my_user") \
         .option('password', 'mypass') \
-        .option('driver', "org.postgresql.driver")
+        .option('driver', "org.postgresql.driver")\
+        .mode("append") \
+        .save()
+
+# Set up the stream to use the foreachbatch method
+query = input_df.writeStream \
+    .foreachbatch(write_to_postgres) \
+    .outputmMode('append') \
+    .start()
+
+# Wait for streaming to finish
+query.awaitTermination()
 
             
