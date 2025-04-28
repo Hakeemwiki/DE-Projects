@@ -1,0 +1,21 @@
+# Use official spark image
+FROM bitnami/spark:latest
+
+USER root
+
+# Set working directory
+WORKDIR /opt/app
+
+# Copy the streaming script
+COPY spark_streaming_to_postgres.py .
+
+#Install python packages
+RUN install_packages python3 python3-pip
+RUN pip3 install pyspark psycopg2-binary
+
+# Copy PostgreSQL JDBC driver
+COPY postgresql-42.6.0.jar /opt/bitnami/spark/jars/
+
+RUN the Spark job
+CMD ["spark-submit", "--jars", "/opt/bitnami/spark/jars/postgresql-42.6.0.jar", "spark_streaming_to_postgres.py"]
+
