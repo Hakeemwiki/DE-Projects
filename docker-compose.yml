@@ -14,6 +14,14 @@ services:
       - ./db/postgres_setup.sql:/docker-entrypoint-initdb.d/postgres_setup.sql
     networks:
       - ecommerce_network
+  spark:
+    build: ./spark
+    volumes:
+      - ./data:/data
+    depends_on:
+      - postgres
+    networks:
+      - ecommerce_network
 
 
 networks:
