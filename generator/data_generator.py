@@ -5,12 +5,24 @@ import random
 import time
 from datetime import datetime
 from faker import Faker
+import logging
+from dotenv import load_dotenv
+
+#Logging 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+#load environment variable from the .env file
+load_dotenv()
 
 #Initialize Faker instance
 fake = Faker()
 
-# Event types you can perform
-EVENT_TYPES = ['view', 'purchase']
+# Load generator settings from environment variables
+EVENT_TYPES = os.getenv('EVENT_TYPES', 'view,purchase').split(',')
+MIN_EVENTS = int(os.getenv('MIN_EVENTS', 100))  # Minimum events per file
+MAX_EVENTS = int(os.getenv('MAX_EVENTS', 1000))  # Maximum events per file
+SLEEP_INTERVAL = int(os.getenv('SLEEP_INTERVAL', 15))  # Seconds between file generation
 
 
 # Sample products for data generation
@@ -25,9 +37,9 @@ PRODUCTS = [
 def generate_event():
     product = random.choice(PRODUCTS)
     return {
-        'user_id': random.randint(1, 1000),
+        'user_id': random.randint(1, 10000),
         'user_name': fake.name(),
-        'user_email': fake.email(),
+        'user_email': fake.unique.email(),
         'event_type': random.choice(EVENT_TYPES),
         'product_id': product['product_id'],
         'product_name': product['product_name'],
@@ -53,20 +65,27 @@ def write_csv(filename, rows):
             ])
             writer.writeheader()
             writer.writerows(rows)
+            logger.info(f"Successfully wrote {len(rows)} events to {filename}")
     except Exception as e:
+        logger.error(f"Error writing {filename}: {e}")
         print(f"Error writing {filename}: {e}")
 
 
 if __name__ == '__main__':
+    logger.info("Starting data generator...")
     try:
         while True:
             # Generate a random number of events (5-15 events per file)
-            events = [generate_event() for _ in range(random.randint(5, 15))]
+            events = [generate_event() for _ in range(random.randint(100, 1000))]
             #Filename with timestamp
             filename = f"events_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
             write_csv(filename, events)
             print(f"Generated {filename}")
-            time.sleep(10) #wait 5 seconds then create next file
+            logger.info(f"Generated {filename} with {len(events)} events")
+            time.sleep(15) #wait 15 seconds then create next file
     except KeyboardInterrupt:
+        logger.info("Data generator stopped by user")
         print("Stopped by user")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         
