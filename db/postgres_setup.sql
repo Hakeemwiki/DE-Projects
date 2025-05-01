@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS events (
     product_price DECIMAL(10, 2) NOT NULL,
     event_time TIMESTAMP NOT NULL,
     CONSTRAINT valid_event_type CHECK (event_type IN ('view', 'purchase')) -- validate event type
-)
+);
 
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_event_time ON events (event_time);
