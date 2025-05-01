@@ -1,5 +1,5 @@
 # Use official spark image
-FROM bitnami/spark:latest
+FROM bitnami/spark:3.5.0
 
 USER root
 
@@ -10,12 +10,22 @@ WORKDIR /opt/app
 COPY spark_streaming_to_postgres.py .
 
 #Install python packages
-RUN install_packages python3 python3-pip
-RUN pip3 install pyspark psycopg2-binary
+# RUN install_packages python3 python3-pip
+# RUN pip3 install pyspark psycopg2-binary
+# RUN pip3 show python-dotenv
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    pip3 install pyspark==3.5.0 psycopg2-binary python-dotenv && \
+    pip3 show python-dotenv && \  
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy PostgreSQL JDBC driver
-COPY postgresql-42.6.0.jar /opt/bitnami/spark/jars/
+COPY postgresql-42.7.5.jar /opt/bitnami/spark/jars/
 
-RUN the Spark job
-CMD ["spark-submit", "--jars", "/opt/bitnami/spark/jars/postgresql-42.6.0.jar", "spark_streaming_to_postgres.py"]
+# Verify the JDBC driver is copied
+RUN ls -l /opt/bitnami/spark/jars/postgresql-42.7.5.jar || { echo "Error: postgresql-42.7.5.jar not found"; exit 1; }
+
+#RUN the Spark job
+CMD ["spark-submit", "--jars", "/opt/bitnami/spark/jars/postgresql-42.7.5.jar", "spark_streaming_to_postgres.py"]
 
