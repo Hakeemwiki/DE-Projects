@@ -1,6 +1,6 @@
 # Project Overview: Real-Time Ecommerce Pipeline
 
-![alt text](images/system_architecture.png)
+![alt text](../images/system_architecture.png)
 
 ## Purpose
 The Real-Time Ecommerce Pipeline project simulates an ecommerce platform’s event tracking system, processing user events (e.g., 'view' or 'purchase') in real-time and storing them in a PostgreSQL database for analysis. It leverages Apache Spark Streaming for scalable, fault-tolerant processing.
