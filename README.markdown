@@ -1,4 +1,5 @@
 # Real-Time E-Commerce Data Pipeline
+![alt text](images/system_architecture.png)
 
 ## Overview
 This project implements a real-time data pipeline for processing e-commerce events using **Apache Spark Structured Streaming**, **PostgreSQL**, and **Docker**. It ingests synthetic event data (e.g., product views and purchases) from CSV files, processes them with PySpark, and stores the results in a PostgreSQL database. The pipeline is designed for scalability, fault tolerance, and ease of deployment, making it ideal for real-time analytics in an e-commerce context.
