@@ -1,18 +1,16 @@
-# Use official spark image
+# Use the official Bitnami Spark 3.5.0 image as the base
 FROM bitnami/spark:3.5.0
 
+# Switch to root user to perform installations and file operations
 USER root
 
-# Set working directory
+# Set the working directory inside the container
 WORKDIR /opt/app
 
-# Copy the streaming script
+# Copy the Spark streaming script into the container
 COPY spark_streaming_to_postgres.py .
 
-#Install python packages
-# RUN install_packages python3 python3-pip
-# RUN pip3 install pyspark psycopg2-binary
-# RUN pip3 show python-dotenv
+# Install Python, pip, and required Python packages, then clean up
 RUN apt-get update && \
     apt-get install -y python3 python3-pip && \
     pip3 install pyspark==3.5.0 psycopg2-binary python-dotenv && \
@@ -20,12 +18,12 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy PostgreSQL JDBC driver
+# Copy the PostgreSQL JDBC driver to Spark's jars directory
 COPY postgresql-42.7.5.jar /opt/bitnami/spark/jars/
 
-# Verify the JDBC driver is copied
+# Verify that the JDBC driver was copied successfully
 RUN ls -l /opt/bitnami/spark/jars/postgresql-42.7.5.jar || { echo "Error: postgresql-42.7.5.jar not found"; exit 1; }
 
-#RUN the Spark job
+# Define the command to run the Spark job with the JDBC driver
 CMD ["spark-submit", "--jars", "/opt/bitnami/spark/jars/postgresql-42.7.5.jar", "spark_streaming_to_postgres.py"]
 

@@ -13,5 +13,8 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 -- Indexes for common queries
+-- Create an index on event_time to optimize time-based queries
 CREATE INDEX IF NOT EXISTS idx_event_time ON events (event_time);
+
+-- Create an index on user_id to optimize user-based queries
 CREATE INDEX IF NOT EXISTS idx_user_id ON events (user_id);

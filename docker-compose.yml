@@ -1,31 +1,44 @@
+# Specify the Docker Compose version for compatibility
 version: '3.8'
 
 services:
+  # PostgreSQL database service
   postgres:
     image: postgres:14
     restart: always
     env_file:
       - .env #Load database credentials from .env file
+    # Map the host's POSTGRES_PORT (from .env) to container's port 5432
     ports:
       - "${POSTGRES_PORT}:5432"
+    # Mount the SQL initialization script to set up the database schema
     volumes:
       - ./db/postgres_setup.sql:/docker-entrypoint-initdb.d/postgres_setup.sql
+    # Connect the service to the custom network
     networks:
       - ecommerce_network
+  # Apache Spark service for data processing
   spark:
+    # Build the Spark container from the Dockerfile in ./spark directory
     build: ./spark
+    # Mount the local ./data directory to /data in the container with read-write access
     volumes:
       - ./data:/data:rw
+    # Ensure Spark starts after PostgreSQL is available
     depends_on:
       - postgres
+    # Load environment variables from .env file
     env_file:
       - .env
+    # Expose port 8080 for Spark's web UI or other services
     ports:
       - "8080:8080"
+    # Connect the service to the custom network
     networks:
       - ecommerce_network
 
-
+# Define the network for communication between services
 networks:
+# Custom bridge network for isolating service communication
   ecommerce_network:
     driver: bridge

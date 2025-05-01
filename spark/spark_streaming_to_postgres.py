@@ -1,4 +1,9 @@
 
+"""
+Spark streaming script to process real-time e-commerce event data from CSV files
+and write it to a PostgreSQL database.
+"""
+
 # Import necessary libraries
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, IntegerType, StringType, DoubleType, TimestampType
@@ -9,18 +14,18 @@ from dotenv import load_dotenv
 # Load environment variable
 load_dotenv()
 
-# Configure logging for monitoring
+# Configure logging for monitoring and debugging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Create a spark session
+# Create a Spark session for processing streaming data
 spark = (SparkSession.builder
-         .appName('RealTimeEcommercePipeline')
-         .config('spark.driver.memory', '1g')
-         .config('spark.sql.streaming.checkpointLocation', '/data/checkpoints')  # Checkpointing for fault tolerance
+         .appName('RealTimeEcommercePipeline') # Name of the Spark application
+         .config('spark.driver.memory', '1g') # Allocate 1GB memory for the driver
+         .config('spark.sql.streaming.checkpointLocation', '/data/checkpoints')  # Directory for checkpointing to ensure fault tolerance
          .getOrCreate())
 
-# Define the structure of the incoming data
+# Define the schema for incoming CSV data to ensure correct data types
 schema = (StructType()
           .add('user_id', IntegerType())
           .add('user_name', StringType())
@@ -33,14 +38,14 @@ schema = (StructType()
           .add('event_time', TimestampType())
           )
 
-# Read incoming CSV files as a data stream
+# Read CSV files as a streaming DataFrame from the /data directory
 input_df = (spark.readStream
-            .schema(schema)
-            .option("header", "true")
-            .option('maxFilesPerTrigger', 1) #Process one file at a time for stability
+            .schema(schema) # Apply the defined schema
+            .option("header", "true") # CSV files have a header row
+            .option('maxFilesPerTrigger', 1) # Process one file at a time to control load
             .csv("/data"))
 
-# Basic data cleaning: Remove duplicates based on user_id and event_time
+# Remove duplicate events based on user_id and event_time to ensure data quality
 cleaned_df = input_df.dropDuplicates(['user_id', 'event_time'])
 
 
@@ -53,6 +58,7 @@ def write_to_postgres(batch_df, batch_id):
         batch_id: ID of the batch.
     """
     try:
+        # Write the batch to PostgreSQL using JDBC
         batch_df.write \
             .format('jdbc') \
             .option("url", f"jdbc:postgresql://postgres:5432/{os.getenv('POSTGRES_DB')}") \
@@ -75,14 +81,14 @@ query = cleaned_df.writeStream \
     .start()
 
 
-# Wait for streaming to finish
+# Keep the streaming query running until termination or error
 try:
-    query.awaitTermination()
+    query.awaitTermination() # Wait for the streaming job to complete
 except Exception as e:
     logger.error(f"Streaming query failed: {e}")
 finally:
-    query.stop()
-    spark.stop()
+    query.stop() # Stop the streaming query
+    spark.stop() # Stop the Spark session
     logger.info("Spark streaming job terminated")
 
             
