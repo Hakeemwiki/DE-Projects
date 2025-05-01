@@ -6,10 +6,6 @@ services:
     restart: always
     env_file:
       - .env #Load database credentials from .env file
-    # environment:
-    #   POSTGRES_DB: events_db
-    #   POSTGRES_USER: my_user
-    #   POSTGRES_PASSWORD: mypass
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
@@ -19,11 +15,13 @@ services:
   spark:
     build: ./spark
     volumes:
-      - ./data:/data
+      - ./data:/data:rw
     depends_on:
       - postgres
     env_file:
       - .env
+    ports:
+      - "8080:8080"
     networks:
       - ecommerce_network
 
