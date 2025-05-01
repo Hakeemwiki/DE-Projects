@@ -38,7 +38,7 @@ input_df = (spark.readStream
             .schema(schema)
             .option("header", "true")
             .option('maxFilesPerTrigger', 1) #Process one file at a time for stability
-            .csv("data"))
+            .csv("/data"))
 
 # Basic data cleaning: Remove duplicates based on user_id and event_time
 cleaned_df = input_df.dropDuplicates(['user_id', 'event_time'])
@@ -55,7 +55,7 @@ def write_to_postgres(batch_df, batch_id):
     try:
         batch_df.write \
             .format('jdbc') \
-            .option("url", f"jdbc:postgresql://postgres:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}") \
+            .option("url", f"jdbc:postgresql://postgres:5432/{os.getenv('POSTGRES_DB')}") \
             .option('dbtable', 'events') \
             .option('user', os.getenv('POSTGRES_USER')) \
             .option('password', os.getenv('POSTGRES_PASSWORD')) \
@@ -71,7 +71,7 @@ def write_to_postgres(batch_df, batch_id):
 # Set up the stream to use the foreachbatch method
 query = cleaned_df.writeStream \
     .foreachBatch(write_to_postgres) \
-    .outputmMode('append') \
+    .outputMode('append') \
     .start()
 
 
