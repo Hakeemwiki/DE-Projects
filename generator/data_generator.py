@@ -20,9 +20,9 @@ fake = Faker()
 
 # Load generator settings from environment variables
 EVENT_TYPES = os.getenv('EVENT_TYPES', 'view,purchase').split(',')
-MIN_EVENTS = int(os.getenv('MIN_EVENTS', 100))  # Minimum events per file
-MAX_EVENTS = int(os.getenv('MAX_EVENTS', 1000))  # Maximum events per file
-SLEEP_INTERVAL = int(os.getenv('SLEEP_INTERVAL', 15))  # Seconds between file generation
+MIN_EVENTS = int(os.getenv('MIN_EVENTS', 100))  # Minimum events per file, specified the values here for defualt fallbacks
+MAX_EVENTS = int(os.getenv('MAX_EVENTS', 1000))  # Maximum events per file, specified the values here for defualt fall backs
+SLEEP_INTERVAL = int(os.getenv('SLEEP_INTERVAL', 15))  # Seconds between file generation, specified the values here for defualt fall backs
 
 
 # Sample products for data generation
