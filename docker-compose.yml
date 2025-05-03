@@ -13,3 +13,34 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes # Allows Kafka to connect without authentication (simple for local dev).
     networks:
       - app-network # Connects to a custom network for communication with Kafka.
+  
+  # Kafka service for message queuing and streaming.
+  Kafka:
+    image: bitnami/kafka:latest # Official Bitnami Kafka image, supports ZooKeeper-based setup.
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami # Persists Kafka data (topics, messages) for durability.
+    environment:
+    # Disables KRaft mode to use ZooKeeper for metadata management.
+      - KAFKA_ENABLE_KRAFT=no
+    # Specifies ZooKeeper connection (zookeeper service, port 2181).
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2121
+    # Configures Kafka to listen on port 9092 with PLAINTEXT protocol (no security for local dev).
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+    # Advertises the listener to clients (localhost:9092 for host access).
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    # Maps listener to PLAINTEXT protocol (no encryption/auth for simplicity).
+      - KAFKA_CFG_LISTENERS_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+    # Enables plaintext listener (required for local setup without SSL).
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    # Sets broker ID (unique for each broker; 1 for single-node setup).
+      - KAFKA_BROKER_ID=1
+    # Enables auto-creation of topics when producers send data (convenient for testing).
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    depends_on:
+      - zookeeper # Ensures ZooKeeper starts before Kafka, as Kafka relies on it.
+    networks:
+      - app-network # Connects to the same network as ZooKeeper and other services.
+
+
