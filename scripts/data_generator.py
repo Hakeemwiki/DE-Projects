@@ -50,3 +50,19 @@ if __name__ == "__main__":
     Main loop to generate a large amount of heart beat data.
     Generates 10,000 records by default, with a 0.1-second delay between each.
     """
+
+    num_records = 10000
+    print(f"Starting data generation for {num_records} heart beat records .....")
+
+    records_generated = 0
+
+    try:
+        while records_generated < num_records:
+            data = generate_heartbeat()
+            print(f"Record {records_generated + 1}:  {data}")
+            records_generated += 1
+            time.sleep(0.1) # 10 records per second
+    except KeyboardInterrupt:
+        print("\nStopped by User")
+    finally:
+        print(f"Generated {records_generated} heart beat records")
