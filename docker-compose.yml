@@ -1,0 +1,15 @@
+
+version: '3.8'
+
+services:
+  # ZooKeeper service to manage Kafka's metadata and coordination.
+  zookeeper:
+    image: bitnami/zookeeper:latest # Official Bitnami ZooKeeper image, lightweight and secure.
+    ports:
+      - "2121:2121" # Exposes ZooKeeper's client port to the host for Kafka to connect.
+    volumes:
+      - zookeeper_data:/bitnami # Persists ZooKeeper data to avoid loss on container restart.
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes # Allows Kafka to connect without authentication (simple for local dev).
+    networks:
+      - app-network # Connects to a custom network for communication with Kafka.
