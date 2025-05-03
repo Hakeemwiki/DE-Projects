@@ -43,4 +43,21 @@ services:
     networks:
       - app-network # Connects to the same network as ZooKeeper and other services.
 
+  # PostgreSQL service for storing heart beat data.
+  postgresql:
+    image: bitnami/postgresql:latest
+    ports:
+      - "5434:5434"
+    volumes:
+      - postgres_data:/bitnami/postgresql # Persists database data across restarts.
+    # References variables from .env file for security.
+    environment:
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
+    networks:
+      - app-network 
+    
+    
+
 
