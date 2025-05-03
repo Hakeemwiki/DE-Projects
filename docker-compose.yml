@@ -1,81 +1,78 @@
-
-version: '3.8'
+version: "3.8"  # Docker Compose file format (version 3.8 for compatibility).
 
 services:
   # ZooKeeper service to manage Kafka's metadata and coordination.
   zookeeper:
-    image: bitnami/zookeeper:latest # Official Bitnami ZooKeeper image, lightweight and secure.
+    image: bitnami/zookeeper:latest  # Official Bitnami ZooKeeper image, lightweight and secure.
     ports:
-      - "2121:2121" # Exposes ZooKeeper's client port to the host for Kafka to connect.
+      - "2181:2181"  # Exposes ZooKeeper's default client port (corrected from 2121).
     volumes:
-      - zookeeper_data:/bitnami # Persists ZooKeeper data to avoid loss on container restart.
+      - zookeeper_data:/bitnami  # Persists ZooKeeper data to avoid loss on container restart.
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes # Allows Kafka to connect without authentication (simple for local dev).
+      - ALLOW_ANONYMOUS_LOGIN=yes  # Allows Kafka to connect without authentication (simple for local dev).
     networks:
-      - app-network # Connects to a custom network for communication with Kafka.
-  
+      - app-network  # Connects to a custom network for communication with Kafka.
+
   # Kafka service for message queuing and streaming.
   kafka:
-    image: bitnami/kafka:latest # Official Bitnami Kafka image, supports ZooKeeper-based setup.
+    image: bitnami/kafka:3.6.0  # Pinned version for stability.
     ports:
-      - "9092:9092"
+      - "9092:9092"  # Exposes Kafka's client port for producers/consumers.
     volumes:
-      - kafka_data:/bitnami # Persists Kafka data (topics, messages) for durability.
+      - kafka_data:/bitnami  # Persists Kafka data (topics, messages) for durability.
     environment:
-    # Disables KRaft mode to use ZooKeeper for metadata management.
+      # Disables KRaft mode to use ZooKeeper for metadata management.
       - KAFKA_ENABLE_KRAFT=no
-    # Specifies Kafka's role as a broker (required for ZooKeeper mode). Had an error without it
-      - KAFKA_CFG_PROCESS_ROLES=broker
-    # Specifies ZooKeeper connection (zookeeper service, port 2181).
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2121
-    # Configures Kafka to listen on port 9092 with PLAINTEXT protocol (no security for local dev).
+      # Connects to ZooKeeper service (zookeeper:2181, default port).
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # Configures Kafka to listen on port 9092 with PLAINTEXT protocol.
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-    # Advertises the listener to clients (localhost:9092 for host access).
+      # Advertises the listener to clients (localhost:9092 for host access).
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-    # Maps listener to PLAINTEXT protocol (no encryption/auth for simplicity).
-      - KAFKA_CFG_LISTENERS_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
-    # Enables plaintext listener (required for local setup without SSL).
+      # Maps listener to PLAINTEXT protocol (must match KAFKA_CFG_LISTENERS).
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+      # Allows plaintext connections (simplifies local setup).
       - ALLOW_PLAINTEXT_LISTENER=yes
-    # Sets broker ID (unique for each broker; 1 for single-node setup).
+      # Unique broker ID (1 for single-node setup).
       - KAFKA_BROKER_ID=1
-    # Enables auto-creation of topics when producers send data (convenient for testing).
+      # Enables auto-creation of topics when producers send data.
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
     depends_on:
-      - zookeeper # Ensures ZooKeeper starts before Kafka, as Kafka relies on it.
+      - zookeeper  # Ensures ZooKeeper starts before Kafka, as Kafka relies on it.
     networks:
-      - app-network # Connects to the same network as ZooKeeper and other services.
+      - app-network  # Connects to the same network as ZooKeeper and other services.
 
   # PostgreSQL service for storing heart beat data.
   postgresql:
-    image: bitnami/postgresql:latest
+    image: bitnami/postgresql:latest  # Bitnami PostgreSQL image, pre-configured.
     ports:
-      - "5434:5434"
+      - "5434:5432"  # Maps host port 5434 to container port 5432 (corrected from 5434:5434).
     volumes:
-      - postgres_data:/bitnami/postgresql # Persists database data across restarts.
-    # References variables from .env file for security.
+      - postgres_data:/bitnami/postgresql  # Persists database data across restarts.
     environment:
+      # References variables from .env file for security.
       - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
       - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
       - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
     networks:
-      - app-network 
+      - app-network  # Connects to network for consumer access.
 
-# Kafka-UI service for monitoring Kafka topics and messages.
+  # Kafka-UI service for monitoring Kafka topics and messages.
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest # Web-based UI for Kafka monitoring.
+    image: provectuslabs/kafka-ui:latest  # Web-based UI for Kafka monitoring.
     ports:
-      - "8080:8080" # Exposes UI on localhost:8080.
+      - "8080:8080"  # Exposes UI on localhost:8080.
     environment:
-    # Names the Kafka cluster in the UI.
+      # Names the Kafka cluster in the UI.
       - KAFKA_CLUSTERS_0_NAME=local
-    # Connects to Kafka broker (kafka:9092).
+      # Connects to Kafka broker (kafka:9092).
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-    # Connects to ZooKeeper for metadata (optional for UI).
+      # Connects to ZooKeeper for metadata (corrected to 2181).
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
-      - kafka # Ensures Kafka is running before UI starts.
+      - kafka  # Ensures Kafka is running before UI starts.
     networks:
-      - app-network # Connects to Kafka and ZooKeeper.
+      - app-network  # Connects to Kafka and ZooKeeper.
 
 # Persistent volumes for data durability.
 volumes:
@@ -89,11 +86,4 @@ volumes:
 # Custom network for inter-service communication.
 networks:
   app-network:
-    driver: bridge # Allows containers to communicate via service names (e.g., kafka, postgresql).
-
-
-  
-    
-    
-
-
+    driver: bridge  # Allows containers to communicate via service names (e.g., kafka, postgresql).
