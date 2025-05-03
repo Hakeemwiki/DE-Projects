@@ -24,6 +24,8 @@ services:
     environment:
     # Disables KRaft mode to use ZooKeeper for metadata management.
       - KAFKA_ENABLE_KRAFT=no
+    # Specifies Kafka's role as a broker (required for ZooKeeper mode). Had an error without it
+      - KAFKA_CFG_PROCESS_ROLES=broker
     # Specifies ZooKeeper connection (zookeeper service, port 2181).
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2121
     # Configures Kafka to listen on port 9092 with PLAINTEXT protocol (no security for local dev).
