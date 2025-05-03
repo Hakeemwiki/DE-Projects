@@ -8,3 +8,7 @@ CREATE TABLE heartbeats (
 
 -- Create an index on timestamp for efficient time-series queries
 CREATE INDEX idx_timestamp ON heartbeats (timestamp);
+
+-- Create an index on customer ID in case it is frequently filtered 
+-- which is optional based on th eproject
+CREATE INDEX idx_customer_id ON heartbeats (customer_id);
