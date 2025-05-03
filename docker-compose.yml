@@ -15,7 +15,7 @@ services:
       - app-network # Connects to a custom network for communication with Kafka.
   
   # Kafka service for message queuing and streaming.
-  Kafka:
+  kafka:
     image: bitnami/kafka:latest # Official Bitnami Kafka image, supports ZooKeeper-based setup.
     ports:
       - "9092:9092"
@@ -57,6 +57,40 @@ services:
       - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
     networks:
       - app-network 
+
+# Kafka-UI service for monitoring Kafka topics and messages.
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest # Web-based UI for Kafka monitoring.
+    ports:
+      - "8080:8080" # Exposes UI on localhost:8080.
+    environment:
+    # Names the Kafka cluster in the UI.
+      - KAFKA_CLUSTERS_0_NAME=local
+    # Connects to Kafka broker (kafka:9092).
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    # Connects to ZooKeeper for metadata (optional for UI).
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    depends_on:
+      - kafka # Ensures Kafka is running before UI starts.
+    networks:
+      - app-network # Connects to Kafka and ZooKeeper.
+
+# Persistent volumes for data durability.
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+# Custom network for inter-service communication.
+networks:
+  app-network:
+    driver: bridge # Allows containers to communicate via service names (e.g., kafka, postgresql).
+
+
+  
     
     
 
