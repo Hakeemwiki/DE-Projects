@@ -17,3 +17,9 @@ kafka_config = config["kafka"]
 bootstrap_servers = kafka_config["bootstrap_servers"] # localhost:9093
 topic = kafka_config["topic"] #heartbeats
 
+# Create a Kafka producer
+producer = KafkaProducer(
+    bootstrap_servers = bootstrap_servers,
+    value_serializer = lambda v: str(v).encode("utf-8")
+)
+
