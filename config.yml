@@ -1,0 +1,9 @@
+kafka:
+  bootstrap_servers: "localhost:9093" # External Kafka listener
+  topic: "heartbeats"
+  producer_acks: 1
+  retries: 3
+
+postgres:
+  host: "localhost"
+  port: 5434
