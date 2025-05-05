@@ -1,0 +1,11 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY scripts/kafka_consumer.py scripts/kafka_consumer.py
+COPY config.yml config.yml
+
+CMD [ "python", "scripts/kafka_consumer.py" ]
