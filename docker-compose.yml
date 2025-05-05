@@ -98,8 +98,11 @@ services:
       dockerfile: Dockerfile.producer
     depends_on:
       - kafka
-      - consumer
-
+      - consumer #Ensures consumer starts first
+    networks:
+      - app-network
+    environment:
+      - PYTHONUNBUFFERED=1
 
 
 # Persistent volumes for data durability.
