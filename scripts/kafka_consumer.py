@@ -23,4 +23,29 @@ bootstrap_servers = kafka_config["bootstrap_servers"]
 topic = kafka_config["topic"]
 
 # Get PostgreSQL settings from environment variables
-db_host = config["postgress"]["host"]
+db_host = config["postgres"]["host"]
+db_port = config["postgres"]["port"]
+db_user = os.getenv("POSTGRESQL_USERNAME")
+db_password = os.getenv("POSTGRESQL_PASSWORD")
+db_name = os.getenv("POSTGRESQL_DATABASE")
+
+# Create a Kafka consumer
+consumer = KafkaConsumer(
+    topic,
+    bootstrap_servers = bootstrap_servers,
+    value_serializer = lambda x: eval(x.decode("utf-8")) # Convert bytes back to dictionary
+)
+
+# Connect to PostgreSQL
+conn = psycopg2.connect(
+    host = db_host,
+    port = db_port,
+    user = db_user,
+    password = db_password,
+    database = db_name
+)
+cursor = conn.cursor()
+
+
+if __name__ == "__main__":
+    
