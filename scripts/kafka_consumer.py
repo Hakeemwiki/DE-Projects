@@ -33,7 +33,10 @@ db_name = os.getenv("POSTGRESQL_DATABASE")
 consumer = KafkaConsumer(
     topic,
     bootstrap_servers = bootstrap_servers,
-    value_serializer = lambda x: eval(x.decode("utf-8")) # Convert bytes back to dictionary
+    group_id = "heartbeat_consumer_group", # Added group_id for offset tracking
+    auto_offset_reset = "earliest",  
+    enable_auto_commit = True,  # Automatically commit offsets
+    value_deserializer = lambda x: eval(x.decode("utf-8")) # Convert bytes back to dictionary
 )
 
 # Connect to PostgreSQL
@@ -48,4 +51,25 @@ cursor = conn.cursor()
 
 
 if __name__ == "__main__":
-    
+    logging.info("Starting consumer")
+    try:
+        for message in consumer:
+            data = message.value # Get the heart beat data
+            # Insert the data into PostgreSQL
+            query = """
+            INSERT INTO heartbeats (customer_id, timestamp, heart_rate)
+            VALUES (%s, %s, %s)
+            """
+            cursor.execute(query, (data["customer_id"], data["timestamp"], data["heart_rate"]))
+            conn.commit()  # Save the changes
+            logging.info(f"Stored: {data}")
+    except KeyboardInterrupt:
+        logging.info("Stopping Consumer")
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        cursor.close()
+        conn.close()
+
+       
