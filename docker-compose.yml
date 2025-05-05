@@ -5,57 +5,60 @@ services:
   zookeeper:
     image: bitnami/zookeeper:latest  # Official Bitnami ZooKeeper image, lightweight and secure.
     ports:
-      - "2181:2181"  # Exposes ZooKeeper's default client port (corrected from 2121).
+      - "2181:2181"  # Exposes ZooKeeper's default client port.
     volumes:
-      - zookeeper_data:/bitnami  # Persists ZooKeeper data to avoid loss on container restart.
+      - zookeeper_data:/bitnami  # Persists ZooKeeper data.
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes  # Allows Kafka to connect without authentication (simple for local dev).
+      - ALLOW_ANONYMOUS_LOGIN=yes  # Allows Kafka to connect without authentication.
     networks:
-      - app-network  # Connects to a custom network for communication with Kafka.
+      - app-network  # Custom network for communication.
 
   # Kafka service for message queuing and streaming.
   kafka:
     image: bitnami/kafka:3.6.0  # Pinned version for stability.
     ports:
-      - "9092:9092"  # Exposes Kafka's client port for producers/consumers.
+      - "9092:9092"  # Exposes PLAINTEXT listener for internal communication.
+      - "9093:9093"  # Exposes EXTERNAL listener for host access.
     volumes:
-      - kafka_data:/bitnami  # Persists Kafka data (topics, messages) for durability.
+      - kafka_data:/bitnami  # Persists Kafka data.
     environment:
-      # Disables KRaft mode to use ZooKeeper for metadata management.
+      # Disables KRaft mode to use ZooKeeper.
       - KAFKA_ENABLE_KRAFT=no
-      # Connects to ZooKeeper service (zookeeper:2181, default port).
+      # Connects to ZooKeeper service (default port 2181).
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      # Configures Kafka to listen on port 9092 with PLAINTEXT protocol.
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      # Advertises the listener to clients (localhost:9092 for host access).
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      # Maps listener to PLAINTEXT protocol (must match KAFKA_CFG_LISTENERS).
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
-      # Allows plaintext connections (simplifies local setup).
+      # Defines two listeners: PLAINTEXT for internal, EXTERNAL for host access.
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL://:9093
+      # Advertises listeners for internal (kafka:9092) and external (localhost:9093) access.
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9093
+      # Maps both listeners to PLAINTEXT protocol (no encryption).
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      # Allows plaintext connections.
       - ALLOW_PLAINTEXT_LISTENER=yes
-      # Unique broker ID (1 for single-node setup).
+      # Unique broker ID.
       - KAFKA_BROKER_ID=1
-      # Enables auto-creation of topics when producers send data.
+      # Enables auto-creation of topics.
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      # Specifies PLAINTEXT as the inter-broker listener.
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     depends_on:
-      - zookeeper  # Ensures ZooKeeper starts before Kafka, as Kafka relies on it.
+      - zookeeper  # Ensures ZooKeeper starts first.
     networks:
-      - app-network  # Connects to the same network as ZooKeeper and other services.
+      - app-network
 
   # PostgreSQL service for storing heart beat data.
   postgresql:
-    image: bitnami/postgresql:latest  # Bitnami PostgreSQL image, pre-configured.
+    image: bitnami/postgresql:latest  # Bitnami PostgreSQL image.
     ports:
-      - "5434:5432"  # Maps host port 5434 to container port 5432 (corrected from 5434:5434).
+      - "5434:5432"  # Maps host port 5434 to container port 5432.
     volumes:
-      - postgres_data:/bitnami/postgresql  # Persists database data across restarts.
+      - postgres_data:/bitnami/postgresql  # Persists database data.
     environment:
-      # References variables from .env file for security.
+      # References variables from .env file.
       - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
       - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
       - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
     networks:
-      - app-network  # Connects to network for consumer access.
+      - app-network
 
   # Kafka-UI service for monitoring Kafka topics and messages.
   kafka-ui:
@@ -65,14 +68,39 @@ services:
     environment:
       # Names the Kafka cluster in the UI.
       - KAFKA_CLUSTERS_0_NAME=local
-      # Connects to Kafka broker (kafka:9092).
+      # Connects to Kafka broker (internal container name, PLAINTEXT listener).
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-      # Connects to ZooKeeper for metadata (corrected to 2181).
+      # Connects to ZooKeeper (default port).
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
       - kafka  # Ensures Kafka is running before UI starts.
     networks:
-      - app-network  # Connects to Kafka and ZooKeeper.
+      - app-network
+
+  consumer:
+    build: 
+      context: 
+      dockerfile: Dockerfile.consumer
+    depends_on:
+      - kafka
+      - postgresql
+    networks:
+      - app-network
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
+  
+  producer:
+    build: 
+      context: 
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+      - consumer
+
+
 
 # Persistent volumes for data durability.
 volumes:
@@ -86,4 +114,4 @@ volumes:
 # Custom network for inter-service communication.
 networks:
   app-network:
-    driver: bridge  # Allows containers to communicate via service names (e.g., kafka, postgresql).
+    driver: bridge  # Allows containers to communicate via service names.
