@@ -106,6 +106,20 @@ services:
       - PYTHONUNBUFFERED=1
     command: sh -c "sleep 30 && python scripts/kafka_producer.py"  # Increased delay to 30 seconds
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - postgresql
+    networks:
+      - app-network
+
 
 # Persistent volumes for data durability.
 volumes:
@@ -114,6 +128,8 @@ volumes:
   kafka_data:
     driver: local
   postgres_data:
+    driver: local
+  grafana_data:
     driver: local
 
 # Custom network for inter-service communication.
