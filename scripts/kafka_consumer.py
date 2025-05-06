@@ -34,7 +34,7 @@ consumer = KafkaConsumer(
     topic,
     bootstrap_servers = bootstrap_servers,
     group_id = "heartbeat_consumer_group", # Added group_id for offset tracking
-    auto_offset_reset = "earliest",  
+    auto_offset_reset = "latest",  
     enable_auto_commit = True,  # Automatically commit offsets
     value_deserializer = lambda x: eval(x.decode("utf-8")) # Convert bytes back to dictionary
 )
