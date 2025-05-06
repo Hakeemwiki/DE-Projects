@@ -106,7 +106,7 @@ The `heartbeats` table is created using `schema.sql`:
 ![alt text](images/Sql_table.png)
 
 
-- Logs showing successful `Sent` and `Stored` messages: [Insert screenshot]
+- Logs showing successful `Sent` and `Stored` messages:
 ![alt text](images/Producer_consumer.png)
 
 
