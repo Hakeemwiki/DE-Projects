@@ -1,5 +1,7 @@
 # Heartbeat Monitoring Project
 
+![alt text](<Data Flow Diagram.png>)
+
 ## Overview
 This project implements a real-time heartbeat monitoring system using Apache Kafka for message streaming, a PostgreSQL database for data storage, and visualization tools (Kafka-UI and Grafana). The system generates synthetic heartbeat data for 1,000 unique customers(Trial purposes), sends it to a Kafka topic, processes it with a consumer, stores it in PostgreSQL, and visualizes it for monitoring purposes.
 
