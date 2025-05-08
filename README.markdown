@@ -101,8 +101,7 @@ The `heartbeats` table is created using `schema.sql`:
 
 
 - Grafana dashboard displaying heartbeat rate over time: 
-![alt text](<dashboard/Grafana Dashboard.png>)
-
+![alt text](dashboard/grafana_dashboard.png)
 
 - PostgreSQL query results (e.g., `SELECT * FROM heartbeats LIMIT 10`):
 ![alt text](images/Sql_table.png)
