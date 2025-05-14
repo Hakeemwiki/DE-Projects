@@ -1,0 +1,6 @@
+pandas
+sqlalchemy
+mysql-connector-python
+psycopg2-binary
+apache-airflow
+python-dotenv
