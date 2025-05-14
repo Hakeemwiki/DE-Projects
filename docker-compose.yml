@@ -23,4 +23,19 @@ services:
     ports:
       - "3306:3306"
   
- 
+  apache-webserver:
+    image: apache/airflow
+    depends_on:
+      - postgres
+      - mysql
+    environment:
+      - AIRFLOW__CORE__EXECUTER=${AIRFLOW__CORE__EXECUTER}
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - .logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    command: webserver
