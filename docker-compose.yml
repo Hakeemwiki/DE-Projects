@@ -54,3 +54,19 @@ services:
       - ./data:/opt/airflow/data
       - ./logs:/opt/airflow/logs
     command: scheduler
+
+  airflow-init:
+    image: apache/airflow
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTER=${AIRFLOW__CORE__EXECUTER}
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+    command: >
+      bash -c "airflow db init && airflow users create\
+      --username {AIRFLOW_ADMIN_USER}$ \
+      --firstname Admin\
+      --lastname User\
+      --email hakeemwikireh@gmail.com\
+      --password ${AIRFLOW_ADMIN_PASSWORD}"
+
