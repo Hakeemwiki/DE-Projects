@@ -70,3 +70,6 @@ services:
       --email hakeemwikireh@gmail.com\
       --password ${AIRFLOW_ADMIN_PASSWORD}"
 
+volumes:
+  postgres_data:
+  mysql_data:
