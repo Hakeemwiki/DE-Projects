@@ -65,3 +65,52 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     logger.info("Computed average total fare by airline")
 
     # KPI 2: Seasonal fare variations
+    # Peak season is the time that people travel the most
+    df['Is_Peak_Season'] = df['Seasonality'].apply(lambda x: 1 if x == 'Peak' else 0)
+    peak_vs_off_peak = df.groupby('Is_Peak_Season')['Total Fare (BDT)'].mean().reset_index()
+    peak_vs_off_peak.columns = ['Is_Peak_Season', 'Average Fare']
+    peak_vs_off_peak['Is_Peak_Season'] = peak_vs_off_peak['Is_Peak_Season'].map({0: 'Off-Peak (Regular)', 1: 'Peak (Winter/Eid/Hajj)'})
+    logger.info("Computed average fare for peak vs off-peak seasons")
+
+    # Retain per season averages for analysis
+    seasonal_fare = df.groupby('Seasonality')['Total Fare (BDT)'].mean().reset_index()
+    seasonal_fare.columns = ['Seasonality', 'Average Fare']
+    logger.info("Computed seasonal fare variation (peak vs. non-peak and per-season)")
+
+    # KPI 3: Booking Count by Airline
+    booking_count = df.groupby('Airline')['Airline'].size().reset_index(name='Booking_Count')
+    logger.info("Computed booking count by airline")
+
+    # KPI 4: Most popular routes
+    routes = df.groupby(['Source', 'Destination']).size().reset_index(name='Booking_Count')
+    popular_routes = routes.sort_values(by='Booking_Count', ascending=False).head(10)
+    logger.info("Computed most popular routes")
+
+    # Save transformed data and KPIs to MySQL
+    try:
+        df.to_sql(f'{table_name}_transformed', con=engine, if_exists='replace', index=False)
+        logger.info(f"Saved transformed data to {table_name}_transformed")
+    except Exception as e:
+        logger.error(f'Failed to save transformed data to MySQL {e}')
+        raise
+
+    # Return KPIs
+    kpis = {
+        'average_total_fare': average_total_fare,
+        'peak_vs_off_peak': peak_vs_off_peak,
+        'seasonal_fare': seasonal_fare,
+        'booking_count': booking_count,
+        'popular_routes': popular_routes
+    }
+    logger.info("Transformation and KPI computation completed successfully")
+    return kpis
+
+if __name__ == "__main__":
+    kpis = transform_and_compute_kpis(
+        mysql_conn_id="mysql_staging",
+        table_name="flight_price_dataset"
+    )
+
+    for kpi_name, kpi_df in kpis.items():
+        print(f"{kpi_name}:\n{kpi_df}\n")
+
