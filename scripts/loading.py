@@ -18,7 +18,7 @@ logging.basicConfig(
     ]
 )
 
-def load_to_postgres(mysql_conn_id, csv_path, table_name):
+def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
     """
     Load transformed data and KPIs to PostgreSQL.
 
@@ -40,3 +40,29 @@ def load_to_postgres(mysql_conn_id, csv_path, table_name):
     
     postgres_conn_string = (f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
         f"@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DATABASE')}")
+    
+    #connect to databases
+    try:
+        mysql_engine = create_engine(mysql_conn_string)
+        postgres_engine = create_engine(postgres_conn_string)
+    except Exception as e:
+        logger.error(f'Failed to connect to databases: {e}')
+        raise
+
+    # Load transformed data from MySQL to PostgreSQL
+    try:
+        df = pd.read_sql_table(f"Select * from {mysql_table}", con=mysql_engine)
+        df.to_sql(mysql_table, con=postgres_engine, if_exists='replace', index=False)
+        logger.info(f"Loaded {len(df)} rows from MySQL {mysql_table} to PostgreSQL")
+    except Exception as e:
+        logger.error(f'Failed to load data from MySQL to PostgreSQL: {e}')
+        raise
+
+    # Load KPIs to PostgreSQL
+    kpi_tables = {
+        'avg_fare_by_airline': 'kpi_fare_by_airline',
+        'peak_vs_off_peak': 'kpi_peak_vs_off_peak',
+        'seasonal_fares': 'kpi_seasonal_fares',
+        'booking_count': 'kpi_booking_count',
+        'popular_routes': 'kpi_popular_routes'
+    }
