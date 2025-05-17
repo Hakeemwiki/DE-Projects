@@ -49,8 +49,10 @@ def validate_data(mysql_conn_id, table_name):
         raise
 
     # Define validation checks
-    required_columns = ['Airline', 'Source', 'Destination', 'Base Fare', 'Tax & Surcharge', 'Total Fare']
-
+    required_columns = [
+        'Airline', 'Source', 'Destination', 'Base Fare (BDT)', 'Tax & Surcharge (BDT)',
+        'Total Fare (BDT)', 'Departure Date & Time', 'Class', 'Seasonality', 'Stopovers'
+    ]
     # Check for missing columns
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
@@ -69,9 +71,13 @@ def validate_data(mysql_conn_id, table_name):
         'Airline': str,
         'Source': str,
         'Destination': str,
-        'Base Fare': float,
-        'Tax & Surcharge': float,
-        'Total Fare': float,
+        'Base Fare (BDT)': float,
+        'Tax & Surcharge (BDT)': float,
+        'Total Fare (BDT)': float,
+        'Departure Date & Time': str,  # Will convert to datetime later
+        'Class': str,
+        'Seasonality': str,
+        'Stopovers': str
     }
 
     for col, expected_type in expected_types.items():
