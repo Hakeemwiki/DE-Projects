@@ -90,14 +90,21 @@ def validate_data(mysql_conn_id, table_name):
             raise ValueError(f'Invalid data type for column {col}')
         
     # Check for inconsistencies
-    negative_fares = df[df['Base Fare'] < 0]
+    negative_fares = df[df['Base Fare (BDT)'] < 0]
     if not negative_fares.empty:
         logger.warning(f"Found {len(negative_fares)} rows with negative Base Fare")
     
-    invalid_cities = df[~df['Source'].str.isalpha() | ~df['Destination'].str.isalpha()]
+    invalid_cities = df[~df['Source'].str.match(r'^[A-Z]{3}$') | ~df['Destination'].str.match(r'^[A-Z]{3}$')]
     if not invalid_cities.empty:
         logger.warning(f"Found {len(invalid_cities)} rows with invalid city names")
 
+    # Invalid seasonality values
+    valid_seasons = ['Regular', 'Eid', 'Hajj', 'Winter'] #According to the data
+    invalid_season = df[~df['Seasonality'].isin(valid_seasons)]
+    if not invalid_season.empty:
+        logger.warning(f"Found {len(invalid_season)} rows with invalid seasonality values")
+
+    
     # Check for duplicate rows
     duplicates = df[df.duplicated()]
     if not duplicates.empty:
@@ -105,10 +112,10 @@ def validate_data(mysql_conn_id, table_name):
 
     # Flag invalid records
     invalid_records = df[
-        df['Base Fare'].lt(0) |
-        df['Source'].str.contains(r'[^a-zA-Z]', na=False) |
-        df['Destination'].str.contains(r'[^a-zA-Z]', na=False)
-    ]
+        df['Base Fare (BDT)'].lt(0) |
+        ~df['Source'].str.match(r'^[A-Z]{3}$') |
+        ~df['Destination'].str.match(r'^[A-Z]{3}$') |
+        ~df['Seasonality'].isin(valid_seasons)]
 
     if not invalid_records.empty:
         try:
