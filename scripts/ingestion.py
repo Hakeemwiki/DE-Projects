@@ -45,7 +45,10 @@ def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
         raise
 
     # Validate reqiured Columns
-    required_columns = ['Airline', 'Source', 'Destination', 'Base Fare', 'Tax & Surcharge', 'Total Fare']
+    required_columns = [
+        'Airline', 'Source', 'Destination', 'Base Fare (BDT)', 'Tax & Surcharge (BDT)',
+        'Total Fare (BDT)', 'Departure Date & Time', 'Class', 'Seasonality', 'Stopovers'
+    ]
     missing_columns = [col for col in required_columns if col not in df.columns]
 
     if missing_columns:
