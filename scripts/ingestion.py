@@ -55,11 +55,23 @@ def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
     # Construct mysql connection string from .env file
     mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
         f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
-
-
     
+    # Create a connection to the MySQL database and load data
+    try:
+        engine = create_engine(mysql_conn_string)
+        df.to_sql(table_name, con=engine, if_exists='replace', index=False)
+        logger.info(f"Successfully loaded {len(df)} rows into {table_name}")
+    except Exception as e:
+        logger.error(f'Failed to load data to mysql to MySQL: {e}')
+        raise
 
 
+if __name__ == "__main__":
+    ingest_csv_to_mysql(
+        mysql_conn_id="mysql_staging",
+        csv_path="/opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv",
+        table_name="flight_prices_raw"
+    )
 
 
 
