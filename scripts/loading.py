@@ -66,3 +66,35 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
         'booking_count': 'kpi_booking_count',
         'popular_routes': 'kpi_popular_routes'
     }
+
+    for kpi_name, table_name in kpi_tables.items():
+        kpi_df = kpis.get(kpi_name)
+        if kpi_df is not None:
+            try:
+                kpi_df.to_sql(table_name, con=postgres_engine, if_exists='replace', index=False)
+                logger.info(f"Loaded {len(kpi_df)} rows from {kpi_name} to PostgreSQL {table_name}")
+            except Exception as e:
+                logger.error(f'Failed to load KPI {kpi_name} to PostgreSQL: {e}')
+                raise
+        else:
+            logger.warning(f'KPI {kpi_name} is None, skipping loading to PostgreSQL')
+
+    logger.info("Data loading to PostgreSQL completed successfully")
+
+if __name__ == "__main__":
+    # Mock KpI data for testing
+    # Mock KPIs for testing
+    kpis = {
+        'avg_fare_by_airline': pd.DataFrame({'Airline': ['Emirates'], 'Average_Fare': [50000.0]}),
+        'peak_vs_non_peak_fares': pd.DataFrame({'Peak_Season': ['Peak (Eid/Hajj/Winter)'], 'Average_Fare': [60000.0]}),
+        'seasonal_fares': pd.DataFrame({'Seasonality': ['Eid'], 'Average_Fare': [60000.0]}),
+        'booking_count': pd.DataFrame({'Airline': ['Emirates'], 'Booking_Count': [1000]}),
+        'popular_routes': pd.DataFrame({'Source': ['DAC'], 'Destination': ['LHR'], 'Booking_Count': [500]})
+    }
+
+    load_to_postgres(
+        mysql_conn_id='mysql_staging',
+        postgres_conn_id='postgres_analytics',
+        mysql_table='flight_prices_raw_transformed',
+        kpis=kpis
+    )
