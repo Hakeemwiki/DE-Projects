@@ -32,7 +32,7 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
         Exception: For database connection or insertion errors
     """
     logger = logging.getLogger("loading")
-    logger.info(f"Starting data loading from MYSQL table {table_name} to PostgreSQL")
+    logger.info(f"Starting data loading from MYSQL table {mysql_table} to PostgreSQL")
 
     # Construct database connection strings
     mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
