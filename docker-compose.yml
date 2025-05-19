@@ -1,5 +1,5 @@
-version: '3.8'
 
+version: '3.8'
 services:
   postgres:
     image: postgres:16
@@ -7,68 +7,150 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DATABASE}
-
     volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
-      - "5432:5432"
+      - "5436:5432"
+    networks:
+      - airflow_network
 
   mysql:
-    image: mysql
+    image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
-  
-  apache-webserver:
-    image: apache/airflow
-    depends_on:
-      - postgres
-      - mysql
-    environment:
-      - AIRFLOW__CORE__EXECUTER=${AIRFLOW__CORE__EXECUTER}
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - .logs:/opt/airflow/logs
-    ports:
-      - "8080:8080"
-    command: webserver
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - airflow_network
 
-  airflow-scheduler:
-    image: apache/airflow
+  airflow-webserver:
+    image: apache/airflow:2.9.3
     depends_on:
-      - postgres
-      - mysql
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     environment:
-      - AIRFLOW__CORE__EXECUTER=${AIRFLOW__CORE__EXECUTER}
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+      - PYTHONPATH=/opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ./scripts:/opt/airflow/scripts
       - ./data:/opt/airflow/data
       - ./logs:/opt/airflow/logs
-    command: scheduler
+      - ./.env:/opt/airflow/.env
+    ports:
+      - "8080:8080"
+    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 10 && airflow webserver"
+    networks:
+      - airflow_network
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+      - PYTHONPATH=/opt/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./.env:/opt/airflow/.env
+    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 15 && airflow scheduler"
+    networks:
+      - airflow_network
 
   airflow-init:
-    image: apache/airflow
+    image: apache/airflow:2.9.3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
-      - AIRFLOW__CORE__EXECUTER=${AIRFLOW__CORE__EXECUTER}
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     command: >
-      bash -c "airflow db init && airflow users create\
-      --username {AIRFLOW_ADMIN_USER}$ \
-      --firstname Admin\
-      --lastname User\
-      --email hakeemwikireh@gmail.com\
-      --password ${AIRFLOW_ADMIN_PASSWORD}"
+      bash -c "pip install mysql-connector-python python-dotenv && 
+      airflow db init &&
+      airflow users create 
+      --username ${AIRFLOW_ADMIN_USER} 
+      --firstname Admin 
+      --lastname User 
+      --role Admin 
+      --email admin@example.com 
+      --password ${AIRFLOW_ADMIN_PASSWORD} &&
+      airflow connections add 'mysql_staging' 
+      --conn-type 'mysql' 
+      --conn-host '${MYSQL_HOST}' 
+      --conn-login 'root' 
+      --conn-password '${MYSQL_PASSWORD}' 
+      --conn-port '3306' 
+      --conn-schema '${MYSQL_DATABASE}' &&
+      airflow connections add 'postgres_analytics' 
+      --conn-type 'postgres' 
+      --conn-host '${POSTGRES_HOST}' 
+      --conn-login '${POSTGRES_USER}' 
+      --conn-password '${POSTGRES_PASSWORD}' 
+      --conn-port '${POSTGRES_PORT}' 
+      --conn-schema '${POSTGRES_DATABASE}'"
+    volumes:
+      - ./logs:/opt/airflow/logs
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./.env:/opt/airflow/.env
+    networks:
+      - airflow_network
+
+networks:
+  airflow_network:
+    driver: bridge
 
 volumes:
   postgres_data:
