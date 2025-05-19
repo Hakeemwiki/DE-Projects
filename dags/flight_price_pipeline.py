@@ -1,10 +1,16 @@
-
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
+import sys
+import os
+
+# Add the scripts directory to the Python path
+sys.path.append('/opt/airflow')
+
+# Import the Python functions
 from scripts.ingestion import ingest_csv_to_mysql
 from scripts.validation import validate_data
-from scripts.transformation import transform_and_compute_kpis   
+from scripts.transformation import transform_and_compute_kpis
 from scripts.loading import load_to_postgres
 
 # Default arguments for the DAG
@@ -13,7 +19,9 @@ default_args = {
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 1
+    'retries': 2,
+    'retry_delay': timedelta(minutes=1),
+    'start_date': datetime(2025, 5, 17)
 }
 
 # Define the DAG
@@ -69,8 +77,8 @@ with DAG(
             'mysql_conn_id': 'mysql_staging',
             'postgres_conn_id': 'postgres_analytics',
             'mysql_table': 'flight_prices_raw_transformed',
-            'kpis': '{{ task_instance.xcom_pull(task_ids="transform_and_compute_kpis") }}' # Pull KPIs from the previous task
         },
+        provide_context=True, # Pass context to the function
         doc_md = "Loads transformed data and KPIs to PostgreSQL"
     )
 
