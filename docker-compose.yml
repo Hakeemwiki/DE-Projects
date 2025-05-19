@@ -1,120 +1,129 @@
+# docker-compose.yml
+# This file defines a Docker Compose configuration for running Apache Airflow with MySQL and PostgreSQL.
+# It sets up services for databases, Airflow webserver, scheduler, and initialization.
 
-version: '3.8'
+version: '3.8'  # Specify Docker Compose file version
+
 services:
+  # PostgreSQL service for Airflow metadata and analytics
   postgres:
-    image: postgres:16
+    image: postgres:16  # Use PostgreSQL 16 image
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}  # PostgreSQL username from .env
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # PostgreSQL password from .env
+      - POSTGRES_DB=${POSTGRES_DATABASE}  # PostgreSQL database name from .env
     volumes:
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh  # Mount database initialization script
+      - postgres_data:/var/lib/postgresql/data  # Persist PostgreSQL data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DATABASE}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DATABASE}"]  # Check if PostgreSQL is ready
+      interval: 5s  # Check every 5 seconds
+      timeout: 5s  # Timeout after 5 seconds
+      retries: 10  # Retry up to 10 times
     ports:
-      - "5436:5432"
+      - "5436:5432"  # Map host port 5436 to container port 5432
     networks:
-      - airflow_network
+      - airflow_network  # Connect to Airflow network
 
+  # MySQL service for staging data
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0  # Use MySQL 8.0 image
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-    command: --default-authentication-plugin=mysql_native_password
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}  # MySQL root password from .env
+      - MYSQL_DATABASE=${MYSQL_DATABASE}  # MySQL database name from .env
+    command: --default-authentication-plugin=mysql_native_password  # Ensure compatibility with mysql-connector
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql  # Persist MySQL data
     ports:
-      - "3308:3306"
+      - "3308:3306"  # Map host port 3308 to container port 3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD}"]  # Check if MySQL is ready
+      interval: 5s  # Check every 5 seconds
+      timeout: 5s  # Timeout after 5 seconds
+      retries: 10  # Retry up to 10 times
     networks:
-      - airflow_network
+      - airflow_network  # Connect to Airflow network
 
+  # Airflow webserver service for the Airflow UI
   airflow-webserver:
-    image: apache/airflow:2.9.3
+    image: apache/airflow:2.9.3  # Use Airflow 2.9.3 image
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy  # Start only when PostgreSQL is healthy
       mysql:
-        condition: service_healthy
+        condition: service_healthy  # Start only when MySQL is healthy
     environment:
-      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=3306
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
-      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
-      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-      - PYTHONPATH=/opt/airflow
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}  # Airflow executor type from .env
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}  # Airflow database connection
+      - MYSQL_USER=root  # MySQL username
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}  # MySQL password from .env
+      - MYSQL_HOST=${MYSQL_HOST}  # MySQL host from .env
+      - MYSQL_PORT=3306  # MySQL port
+      - MYSQL_DATABASE=${MYSQL_DATABASE}  # MySQL database from .env
+      - POSTGRES_USER=${POSTGRES_USER}  # PostgreSQL username from .env
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # PostgreSQL password from .env
+      - POSTGRES_HOST=${POSTGRES_HOST}  # PostgreSQL host from .env
+      - POSTGRES_PORT=${POSTGRES_PORT}  # PostgreSQL port from .env
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}  # PostgreSQL database from .env
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}  # MySQL connection
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}  # PostgreSQL connection
+      - PYTHONPATH=/opt/airflow  # Add Airflow directory to Python path
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
-      - ./.env:/opt/airflow/.env
+      - ./dags:/opt/airflow/dags  # Mount DAGs directory
+      - ./scripts:/opt/airflow/scripts  # Mount scripts directory
+      - ./data:/opt/airflow/data  # Mount data directory
+      - ./logs:/opt/airflow/logs  # Mount logs directory
+      - ./.env:/opt/airflow/.env  # Mount .env file
     ports:
-      - "8080:8080"
-    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 10 && airflow webserver"
+      - "8080:8080"  # Map host port 8080 to Airflow webserver port
+    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 10 && airflow webserver"  # Install dependencies and start webserver
     networks:
-      - airflow_network
+      - airflow_network  # Connect to Airflow network
 
+  # Airflow scheduler service for running tasks
   airflow-scheduler:
-    image: apache/airflow:2.9.3
+    image: apache/airflow:2.9.3  # Use Airflow 2.9.3 image
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy  # Start only when PostgreSQL is healthy
       mysql:
-        condition: service_healthy
+        condition: service_healthy  # Start only when MySQL is healthy
     environment:
-      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=3306
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
-      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
-      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-      - PYTHONPATH=/opt/airflow
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}  # Airflow executor type from .env
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}  # Airflow database connection
+      - MYSQL_USER=root  # MySQL username
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}  # MySQL password from .env
+      - MYSQL_HOST=${MYSQL_HOST}  # MySQL host from .env
+      - MYSQL_PORT=3306  # MySQL port
+      - MYSQL_DATABASE=${MYSQL_DATABASE}  # MySQL database from .env
+      - POSTGRES_USER=${POSTGRES_USER}  # PostgreSQL username from .env
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # PostgreSQL password from .env
+      - POSTGRES_HOST=${POSTGRES_HOST}  # PostgreSQL host from .env
+      - POSTGRES_PORT=${POSTGRES_PORT}  # PostgreSQL port from .env
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}  # PostgreSQL database from .env
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}  # MySQL connection
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}  # PostgreSQL connection
+      - PYTHONPATH=/opt/airflow  # Add Airflow directory to Python path
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
-      - ./.env:/opt/airflow/.env
-    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 15 && airflow scheduler"
+      - ./dags:/opt/airflow/dags  # Mount DAGs directory
+      - ./scripts:/opt/airflow/scripts  # Mount scripts directory
+      - ./data:/opt/airflow/data  # Mount data directory
+      - ./logs:/opt/airflow/logs  # Mount logs directory
+      - ./.env:/opt/airflow/.env  # Mount .env file
+    command: bash -c "pip install mysql-connector-python python-dotenv && sleep 15 && airflow scheduler"  # Install dependencies and start scheduler
     networks:
-      - airflow_network
+      - airflow_network  # Connect to Airflow network
 
+  # Airflow initialization service to set up the database and connections
   airflow-init:
-    image: apache/airflow:2.9.3
+    image: apache/airflow:2.9.3  # Use Airflow 2.9.3 image
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy  # Start only when PostgreSQL is healthy
     environment:
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}
-      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}
-      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}  # Airflow database connection
+      - AIRFLOW_CONN_MYSQL_STAGING=mysql+mysqlconnector://root:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}  # MySQL connection
+      - AIRFLOW_CONN_POSTGRES_ANALYTICS=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}  # PostgreSQL connection
     command: >
       bash -c "pip install mysql-connector-python python-dotenv && 
       airflow db init &&
@@ -140,18 +149,20 @@ services:
       --conn-port '${POSTGRES_PORT}' 
       --conn-schema '${POSTGRES_DATABASE}'"
     volumes:
-      - ./logs:/opt/airflow/logs
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - ./.env:/opt/airflow/.env
+      - ./logs:/opt/airflow/logs  # Mount logs directory
+      - ./dags:/opt/airflow/dags  # Mount DAGs directory
+      - ./scripts:/opt/airflow/scripts  # Mount scripts directory
+      - ./data:/opt/airflow/data  # Mount data directory
+      - ./.env:/opt/airflow/.env  # Mount .env file
     networks:
-      - airflow_network
+      - airflow_network  # Connect to Airflow network
 
+# Define the network for communication between services
 networks:
   airflow_network:
-    driver: bridge
+    driver: bridge  # Use bridge network for isolation
 
+# Define persistent volumes for database data
 volumes:
-  postgres_data:
-  mysql_data:
+  postgres_data:  # Volume for PostgreSQL data
+  mysql_data:  # Volume for MySQL data
