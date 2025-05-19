@@ -1,4 +1,6 @@
-
+# transformation.py
+# This script defines a function to transform flight price data and compute key performance indicators (KPIs).
+# It processes data from a MySQL staging table, calculates missing fares, and generates KPIs like average fares and popular routes
 import pandas as pd
 from sqlalchemy import create_engine
 import logging
@@ -35,9 +37,7 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     logger = logging.getLogger("transformation")
     logger.info(f"Starting transformation and KPI computation for table {table_name}")
 
-    # Construct mysql connection string from .env file
-    # mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
-    #     f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
+    # Construct MySQL connection string using environment variables
     mysql_conn_string = (f"mysql+mysqlconnector://root:{os.getenv('MYSQL_PASSWORD')}"
                     f"@mysql:3306/{os.getenv('MYSQL_DATABASE')}")
     
@@ -63,7 +63,7 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     
     # KPI 1: Average Total Fare by Airline
     average_total_fare = df.groupby('Airline')['Total Fare (BDT)'].mean().reset_index()
-    average_total_fare.columns = ['Airline', 'Average Fare']
+    average_total_fare.columns = ['Airline', 'Average Fare'] # Rename columns for clarity
     logger.info("Computed average total fare by airline")
 
     # KPI 2: Seasonal fare variations
@@ -71,6 +71,7 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     df['Is_Peak_Season'] = df['Seasonality'].apply(lambda x: 1 if x == 'Peak' else 0)
     peak_vs_off_peak = df.groupby('Is_Peak_Season')['Total Fare (BDT)'].mean().reset_index()
     peak_vs_off_peak.columns = ['Is_Peak_Season', 'Average Fare']
+    # Map numeric values to descriptive labels
     peak_vs_off_peak['Is_Peak_Season'] = peak_vs_off_peak['Is_Peak_Season'].map({0: 'Off-Peak (Regular)', 1: 'Peak (Winter/Eid/Hajj)'})
     logger.info("Computed average fare for peak vs off-peak seasons")
 
