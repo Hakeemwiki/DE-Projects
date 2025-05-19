@@ -4,12 +4,13 @@ import logging
 import os
 from dotenv import load_dotenv
 
+
 #Load dotenv variable
 load_dotenv()
 
 # Configure logging with time format and handlers
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", 
-                    handlers=[logging.FileHandler("/opt/airflow/logs/pipeline.log"),
+                    handlers=[ #logging.FileHandler("/opt/airflow/logs/pipeline.log"),
                     logging.StreamHandler()])
 
 def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
@@ -35,6 +36,7 @@ def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
         logger.info(f"Attempting to read CSV from {csv_path}")
         df = pd.read_csv(csv_path)
         logger.info(f"Successfully read {len(df)} rows from csv")
+        logger.info(f"DataFrame columns: {list(df.columns)}")
     except FileNotFoundError as e:
         logger.error(f'CSV file not found: {csv_path}')
         raise
@@ -43,12 +45,16 @@ def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
         raise
 
     # Validate reqiured Columns
+    # required_columns = [
+    #         "Airline", "Source", "Source Name", "Destination", "Destination Name",
+    #         "Departure Date & Time", "Arrival Date & Time", "Duration (hrs)", "Stopovers",
+    #         "Aircraft Type", "Class", "Booking Source", "Base Fare (BDT)",
+    #         "Tax & Surcharge (BDT)", "Total Fare (BDT)", "Seasonality", "Days Before Departure"
+    #     ]
     required_columns = [
-            "Airline", "Source", "Source Name", "Destination", "Destination Name",
-            "Departure Date & Time", "Arrival Date & Time", "Duration (hrs)", "Stopovers",
-            "Aircraft Type", "Class", "Booking Source", "Base Fare (BDT)",
-            "Tax & Surcharge (BDT)", "Total Fare (BDT)", "Seasonality", "Days Before Departure"
-        ]
+        'Airline', 'Source', 'Destination', 'Base Fare (BDT)', 'Tax & Surcharge (BDT)',
+        'Total Fare (BDT)', 'Departure Date & Time', 'Class', 'Seasonality', 'Stopovers'
+    ]
     missing_columns = [col for col in required_columns if col not in df.columns]
 
     if missing_columns:
@@ -83,6 +89,7 @@ def ingest_csv_to_mysql(mysql_conn_id, csv_path, table_name):
 if __name__ == "__main__":
     ingest_csv_to_mysql(
         mysql_conn_id="mysql_staging",
-        csv_path="/opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv",
+        # csv_path="/opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv",
+        csv_path="data/input/Flight_Price_Dataset_of_Bangladesh.csv",
         table_name="flight_prices_raw"
     )
