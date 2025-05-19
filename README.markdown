@@ -1,5 +1,7 @@
 # Flight Price Analysis Project
 
+![alt text](images/Architecture_diagram.png)
+
 ## Overview
 
 The **Flight Price Analysis** project is a data pipeline designed to extract, process, and analyze flight price data to provide actionable insights through key performance indicators (KPIs). The pipeline uses Apache Airflow to orchestrate the workflow, MySQL for raw data storage, PostgreSQL for processed data and Airflow metadata, and Grafana for visualization. The goal is to help stakeholders (e.g., airlines, travel agencies) understand pricing trends, such as average fares by airline, seasonal fare variations, and popular routes.
@@ -73,7 +75,7 @@ docker-compose up -d
 - Verify the `flight_price_pipeline` DAG is visible.
 
 **Attach Image**: Screenshot of Airflow UI showing the `flight_price_pipeline` DAG in the Grid view. 
- 
+
 ![alt text](images/AirflowUI1.png)
 
 ### 5. Inspect MySQL Data
