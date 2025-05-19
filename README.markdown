@@ -72,7 +72,8 @@ docker-compose up -d
 - Log in with username `admin` and password `admin`.
 - Verify the `flight_price_pipeline` DAG is visible.
 
-**Attach Image**: Screenshot of Airflow UI showing the `flight_price_pipeline` DAG in the Grid view.  
+**Attach Image**: Screenshot of Airflow UI showing the `flight_price_pipeline` DAG in the Grid view. 
+ 
 ![alt text](images/AirflowUI1.png)
 
 ### 5. Inspect MySQL Data
@@ -87,7 +88,8 @@ docker-compose up -d
   SELECT * FROM flight_prices LIMIT 10;
   ```
 
-**Attach Image**: Screenshot of MySQL Workbench showing the `flight_prices` table with sample data.  
+**Attach Image**: Screenshot of MySQL Workbench showing the `flight_prices` table with sample data.
+ 
 ![alt text](images/Workbench.png)
 
 ### 6. Inspect PostgreSQL Data
@@ -100,7 +102,8 @@ docker-compose up -d
   SELECT * FROM kpi_fare_by_airline LIMIT 10;
   ```
 
-**Attach Image**: Screenshot of `psql` output or a GUI tool showing the `kpi_fare_by_airline` table.  
+**Attach Image**: Screenshot of `psql` output or a GUI tool showing the `kpi_fare_by_airline` table.
+
 ![alt text](images/Postgres.png)
 
 ### 7. Set Up Grafana Dashboard
@@ -122,7 +125,8 @@ docker-compose up -d
     - Visualization: Bar Chart
     - Unit: Currency > Bangladeshi Taka (৳)
 
-**Attach Image**: Screenshot of Grafana dashboard showing the “Average Fare by Airline” panel.  
+**Attach Image**: Screenshot of Grafana dashboard showing the “Average Fare by Airline” panel.
+
 ![alt text](images/Dashboard.png)
 
 ## Project Structure
