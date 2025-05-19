@@ -157,6 +157,20 @@ services:
     networks:
       - airflow_network  # Connect to Airflow network
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - postgres
+    networks:
+      - airflow_network
+
 # Define the network for communication between services
 networks:
   airflow_network:
@@ -166,3 +180,4 @@ networks:
 volumes:
   postgres_data:  # Volume for PostgreSQL data
   mysql_data:  # Volume for MySQL data
+  grafana_data:  # Volume for Grafana data
