@@ -1,0 +1,28 @@
+2025-05-18 19:34:04,273 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-18 19:34:04,274 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-18 19:34:04,292 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:11:01,507 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:11:01,507 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:11:01,514 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:16:38,436 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:16:38,437 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:16:38,444 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:21:01,069 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:21:01,074 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:21:01,091 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:28:07,136 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:28:07,137 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:28:07,143 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:39:51,004 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:39:51,004 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:39:51,016 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+2025-05-19 04:46:45,967 [INFO] Starting ingestion process from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+2025-05-19 04:46:45,968 [INFO] Attempting to read CSV from /opt/airflow/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+2025-05-19 04:46:45,976 [ERROR] Failed to read CSV file: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+

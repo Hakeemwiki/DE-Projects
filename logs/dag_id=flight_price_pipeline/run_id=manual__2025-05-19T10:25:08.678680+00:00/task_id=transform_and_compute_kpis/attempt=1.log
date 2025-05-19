@@ -1,0 +1,90 @@
+[2025-05-19T10:25:31.395+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-05-19T10:25:31.451+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flight_price_pipeline.transform_and_compute_kpis manual__2025-05-19T10:25:08.678680+00:00 [queued]>
+[2025-05-19T10:25:31.456+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flight_price_pipeline.transform_and_compute_kpis manual__2025-05-19T10:25:08.678680+00:00 [queued]>
+[2025-05-19T10:25:31.456+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 3
+[2025-05-19T10:25:31.468+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): transform_and_compute_kpis> on 2025-05-19 10:25:08.678680+00:00
+[2025-05-19T10:25:31.492+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62 DeprecationWarning: This process (pid=211) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-05-19T10:25:31.493+0000] {standard_task_runner.py:64} INFO - Started process 213 to run task
+[2025-05-19T10:25:31.493+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flight_price_pipeline', 'transform_and_compute_kpis', 'manual__2025-05-19T10:25:08.678680+00:00', '--job-id', '4', '--raw', '--subdir', 'DAGS_FOLDER/flight_price_pipeline.py', '--cfg-path', '/tmp/tmp7ilbg_9d']
+[2025-05-19T10:25:31.495+0000] {standard_task_runner.py:91} INFO - Job 4: Subtask transform_and_compute_kpis
+[2025-05-19T10:25:31.557+0000] {task_command.py:426} INFO - Running <TaskInstance: flight_price_pipeline.transform_and_compute_kpis manual__2025-05-19T10:25:08.678680+00:00 [running]> on host 274a38b9e91e
+[2025-05-19T10:25:31.647+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flight_price_pipeline' AIRFLOW_CTX_TASK_ID='transform_and_compute_kpis' AIRFLOW_CTX_EXECUTION_DATE='2025-05-19T10:25:08.678680+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-05-19T10:25:08.678680+00:00'
+[2025-05-19T10:25:31.649+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-05-19T10:25:31.660+0000] {transformation.py:38} INFO - Starting transformation and KPI computation for table flight_prices_raw
+[2025-05-19T10:25:32.944+0000] {transformation.py:48} INFO - Read 57000 rows from flight_prices_raw table
+[2025-05-19T10:25:32.978+0000] {transformation.py:67} INFO - Computed average total fare by airline
+[2025-05-19T10:25:32.997+0000] {transformation.py:76} INFO - Computed average fare for peak vs off-peak seasons
+[2025-05-19T10:25:33.003+0000] {transformation.py:81} INFO - Computed seasonal fare variation (peak vs. non-peak and per-season)
+[2025-05-19T10:25:33.011+0000] {transformation.py:85} INFO - Computed booking count by airline
+[2025-05-19T10:25:33.023+0000] {transformation.py:90} INFO - Computed most popular routes
+[2025-05-19T10:25:39.849+0000] {transformation.py:95} INFO - Saved transformed data to flight_prices_raw_transformed
+[2025-05-19T10:25:39.854+0000] {transformation.py:108} INFO - Transformation and KPI computation completed successfully
+[2025-05-19T10:25:39.892+0000] {python.py:237} INFO - Done. Returned value was: {'average_total_fare':                       Airline  Average Fare
+0                  Air Arabia  69924.006965
+1                   Air Astra  68497.407804
+2                   Air India  72474.178419
+3                     AirAsia  74534.390651
+4   Biman Bangladesh Airlines  70192.969287
+5             British Airways  70555.536205
+6              Cathay Pacific  73325.091124
+7                    Emirates  70106.149413
+8              Etihad Airways  71785.242045
+9                    FlyDubai  68987.689206
+10                   Gulf Air  71458.163828
+11                     IndiGo  72504.433122
+12             Kuwait Airways  71988.276107
+13                  Lufthansa  69293.163879
+14         Malaysian Airlines  72775.180201
+15                    NovoAir  68350.859248
+16              Qatar Airways  69865.536487
+17                     Saudia  69270.676123
+18         Singapore Airlines  68323.930914
+19         SriLankan Airlines  71265.261154
+20               Thai Airways  72845.789993
+21           Turkish Airlines  75547.268629
+22         US-Bangla Airlines  72088.289025
+23                    Vistara  68108.238844, 'peak_vs_off_peak':        Is_Peak_Season  Average Fare
+0  Off-Peak (Regular)  71030.316199, 'seasonal_fare':        Seasonality  Average Fare
+0              Eid  91560.023236
+1             Hajj  97144.471058
+2          Regular  68077.271029
+3  Winter Holidays  79676.737877, 'booking_count':                       Airline  Booking_Count
+0                  Air Arabia           2217
+1                   Air Astra           2304
+2                   Air India           2280
+3                     AirAsia           2312
+4   Biman Bangladesh Airlines           2344
+5             British Airways           2209
+6              Cathay Pacific           2282
+7                    Emirates           2327
+8              Etihad Airways           2267
+9                    FlyDubai           2346
+10                   Gulf Air           2231
+11                     IndiGo           2223
+12             Kuwait Airways           2262
+13                  Lufthansa           2368
+14         Malaysian Airlines           2292
+15                    NovoAir           2268
+16              Qatar Airways           2267
+17                     Saudia           2321
+18         Singapore Airlines           2279
+19         SriLankan Airlines           2201
+20               Thai Airways           2316
+21           Turkish Airlines           2220
+22         US-Bangla Airlines           4496
+23                    Vistara           2368, 'popular_routes':     Source Destination  Booking_Count
+110    RJH         SIN            417
+64     DAC         DXB            413
+17     BZL         YYZ            410
+43     CXB         DEL            408
+19     CGP         BKK            408
+9      BZL         JED            407
+120    SPD         DEL            404
+106    RJH         JFK            404
+22     CGP         CXB            404
+33     CGP         RJH            403}
+[2025-05-19T10:25:39.918+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-05-19T10:25:40.073+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=flight_price_pipeline, task_id=transform_and_compute_kpis, run_id=manual__2025-05-19T10:25:08.678680+00:00, execution_date=20250519T102508, start_date=20250519T102531, end_date=20250519T102540
+[2025-05-19T10:25:40.140+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2025-05-19T10:25:40.185+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-05-19T10:25:40.187+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

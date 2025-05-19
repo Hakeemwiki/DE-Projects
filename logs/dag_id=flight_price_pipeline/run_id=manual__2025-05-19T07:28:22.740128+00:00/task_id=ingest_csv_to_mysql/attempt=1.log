@@ -1,0 +1,27 @@
+[2025-05-19T07:28:28.771+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-05-19T07:28:28.861+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-19T07:28:22.740128+00:00 [queued]>
+[2025-05-19T07:28:28.870+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-19T07:28:22.740128+00:00 [queued]>
+[2025-05-19T07:28:28.870+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 3
+[2025-05-19T07:28:28.883+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): ingest_csv_to_mysql> on 2025-05-19 07:28:22.740128+00:00
+[2025-05-19T07:28:28.934+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62 DeprecationWarning: This process (pid=197) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-05-19T07:28:28.935+0000] {standard_task_runner.py:64} INFO - Started process 201 to run task
+[2025-05-19T07:28:28.932+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flight_price_pipeline', 'ingest_csv_to_mysql', 'manual__2025-05-19T07:28:22.740128+00:00', '--job-id', '2', '--raw', '--subdir', 'DAGS_FOLDER/flight_price_pipeline.py', '--cfg-path', '/tmp/tmpiivvtf58']
+[2025-05-19T07:28:28.937+0000] {standard_task_runner.py:91} INFO - Job 2: Subtask ingest_csv_to_mysql
+[2025-05-19T07:28:29.003+0000] {task_command.py:426} INFO - Running <TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-19T07:28:22.740128+00:00 [running]> on host 286fd7c1dbed
+[2025-05-19T07:28:29.241+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flight_price_pipeline' AIRFLOW_CTX_TASK_ID='ingest_csv_to_mysql' AIRFLOW_CTX_EXECUTION_DATE='2025-05-19T07:28:22.740128+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-05-19T07:28:22.740128+00:00'
+[2025-05-19T07:28:29.249+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-05-19T07:28:29.319+0000] {ingestion.py:32} INFO - Starting ingestion process from /opt/***/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+[2025-05-19T07:28:29.319+0000] {ingestion.py:36} INFO - Attempting to read CSV from /opt/***/data/input/Flight_Price_Dataset_of_Bangladesh.csv
+[2025-05-19T07:28:29.927+0000] {ingestion.py:38} INFO - Successfully read 57000 rows from csv
+[2025-05-19T07:28:29.929+0000] {ingestion.py:39} INFO - DataFrame columns: ['Airline', 'Source', 'Source Name', 'Destination', 'Destination Name', 'Departure Date & Time', 'Arrival Date & Time', 'Duration (hrs)', 'Stopovers', 'Aircraft Type', 'Class', 'Booking Source', 'Base Fare (BDT)', 'Tax & Surcharge (BDT)', 'Total Fare (BDT)', 'Seasonality', 'Days Before Departure']
+[2025-05-19T07:28:29.934+0000] {ingestion.py:65} INFO - Building MySQL connection string
+[2025-05-19T07:28:29.935+0000] {ingestion.py:69} INFO - Connecting to MySQL database at mysql:3306
+[2025-05-19T07:28:32.322+0000] {ingestion.py:77} INFO - MySQL connection successful
+[2025-05-19T07:28:32.328+0000] {ingestion.py:80} INFO - Saving 57000 rows to MySQL table 'flight_prices_raw'
+[2025-05-19T07:28:41.650+0000] {ingestion.py:82} INFO - Successfully loaded 57000 rows into flight_prices_raw
+[2025-05-19T07:28:41.684+0000] {python.py:237} INFO - Done. Returned value was: success
+[2025-05-19T07:28:41.696+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-05-19T07:28:41.776+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=flight_price_pipeline, task_id=ingest_csv_to_mysql, run_id=manual__2025-05-19T07:28:22.740128+00:00, execution_date=20250519T072822, start_date=20250519T072828, end_date=20250519T072841
+[2025-05-19T07:28:41.845+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2025-05-19T07:28:41.955+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-05-19T07:28:41.957+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

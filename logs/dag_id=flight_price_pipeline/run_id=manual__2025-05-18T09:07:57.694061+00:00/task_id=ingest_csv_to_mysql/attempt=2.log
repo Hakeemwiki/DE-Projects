@@ -1,0 +1,60 @@
+[2025-05-18T09:13:02.911+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-05-18T09:13:02.952+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-18T09:07:57.694061+00:00 [queued]>
+[2025-05-18T09:13:02.960+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-18T09:07:57.694061+00:00 [queued]>
+[2025-05-18T09:13:02.960+0000] {taskinstance.py:2306} INFO - Starting attempt 2 of 2
+[2025-05-18T09:13:02.974+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): ingest_csv_to_mysql> on 2025-05-18 09:07:57.694061+00:00
+[2025-05-18T09:13:02.982+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flight_price_pipeline', 'ingest_csv_to_mysql', 'manual__2025-05-18T09:07:57.694061+00:00', '--job-id', '3', '--raw', '--subdir', 'DAGS_FOLDER/flight_price_pipeline.py', '--cfg-path', '/tmp/tmpmggr25bz']
+[2025-05-18T09:13:02.992+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62 DeprecationWarning: This process (pid=281) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-05-18T09:13:02.993+0000] {standard_task_runner.py:91} INFO - Job 3: Subtask ingest_csv_to_mysql
+[2025-05-18T09:13:02.994+0000] {standard_task_runner.py:64} INFO - Started process 283 to run task
+[2025-05-18T09:13:03.127+0000] {task_command.py:426} INFO - Running <TaskInstance: flight_price_pipeline.ingest_csv_to_mysql manual__2025-05-18T09:07:57.694061+00:00 [running]> on host 087e795023de
+[2025-05-18T09:13:03.272+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flight_price_pipeline' AIRFLOW_CTX_TASK_ID='ingest_csv_to_mysql' AIRFLOW_CTX_EXECUTION_DATE='2025-05-18T09:07:57.694061+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-05-18T09:07:57.694061+00:00'
+[2025-05-18T09:13:03.273+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-05-18T09:13:03.299+0000] {ingestion.py:34} INFO - Starting ingestion process/opt/***/data/input/Flight_Price_Dataset_of_Bangladesh.csv to mysql table flight_prices_raw
+[2025-05-18T09:13:03.330+0000] {ingestion.py:44} ERROR - Failed to read CSV file
+[2025-05-18T09:13:03.330+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-05-18T09:13:03.331+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 401, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/scripts/ingestion.py", line 38, in ingest_csv_to_mysql
+    df = pd.read_csv(csv_path)
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 948, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 617, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1748, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "parsers.pyx", line 843, in pandas._libs.parsers.TextReader.read_low_memory
+  File "parsers.pyx", line 904, in pandas._libs.parsers.TextReader._read_rows
+  File "parsers.pyx", line 879, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "parsers.pyx", line 890, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "parsers.pyx", line 2058, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+
+[2025-05-18T09:13:03.346+0000] {taskinstance.py:1206} INFO - Marking task as FAILED. dag_id=flight_price_pipeline, task_id=ingest_csv_to_mysql, run_id=manual__2025-05-18T09:07:57.694061+00:00, execution_date=20250518T090757, start_date=20250518T091302, end_date=20250518T091303
+[2025-05-18T09:13:03.353+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 3 for task ingest_csv_to_mysql (Error tokenizing data. C error: Expected 18 fields in line 5, saw 19
+; 283)
+[2025-05-18T09:13:03.392+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 1
+[2025-05-18T09:13:03.415+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-05-18T09:13:03.418+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
