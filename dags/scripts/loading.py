@@ -1,3 +1,7 @@
+# loading.py
+# This script loads transformed data and KPIs from MySQL to PostgreSQL.
+# It pulls KPIs from Airflow XCom if not provided and saves them to designated PostgreSQL tables.
+
 
 import pandas as pd
 from sqlalchemy import create_engine
