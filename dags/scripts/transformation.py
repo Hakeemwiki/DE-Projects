@@ -44,7 +44,7 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     # Read data from MySQL table
     try:
         engine = create_engine(mysql_conn_string)
-        df = pd.read_sql_table(f"Select * from {table_name}", con=engine)
+        df = pd.read_sql_table(table_name, con=engine)
         logger.info(f"Read {len(df)} rows from {table_name} table")
     except Exception as e:
         logger.error(f'Failed to read data from MySQL {e}')
