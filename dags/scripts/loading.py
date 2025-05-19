@@ -18,7 +18,7 @@ logging.basicConfig(
     ]
 )
 
-def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
+def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis=None, **context):
     """
     Load transformed data and KPIs to PostgreSQL.
 
@@ -26,7 +26,8 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
         mysql_conn_id (str): Airflow connection ID for MySQL (future use)
         postgres_conn_id (str): Airflow connection ID for PostgreSQL (future use)
         mysql_table (str): MySQL table with transformed data
-        kpis (dict): Dictionary of KPI DataFrames
+        kpis (dict or None): Dictionary of KPI DataFrames or None (pull from XCom if None)
+        context (dict): Airflow context (used for pulling XCom)
 
     Raises:
         Exception: For database connection or insertion errors
@@ -34,6 +35,14 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
     logger = logging.getLogger("loading")
     logger.info(f"Starting data loading from MYSQL table {mysql_table} to PostgreSQL")
 
+    if kpis is None and 'ti' in context:
+        logger.info("No KPI dict provided, pulling from XCom")
+        kpis = context['ti'].xcom_pull(task_ids='transform_and_compute_kpis')
+
+    # 🟡 ADDED: Validate KPI format
+    if not isinstance(kpis, dict):
+        logger.error("KPI data is missing or invalid (must be a dictionary)")
+        raise ValueError("KPI data must be a dictionary")
     # Construct database connection strings
     # mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
     #     f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
@@ -55,7 +64,7 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
 
     # Load transformed data from MySQL to PostgreSQL
     try:
-        df = pd.read_sql_table(f"Select * from {mysql_table}", con=mysql_engine)
+        df = pd.read_sql_table(mysql_table, con=mysql_engine)
         df.to_sql(mysql_table, con=postgres_engine, if_exists='replace', index=False)
         logger.info(f"Loaded {len(df)} rows from MySQL {mysql_table} to PostgreSQL")
     except Exception as e:
@@ -84,6 +93,7 @@ def load_to_postgres(mysql_conn_id, postgres_conn_id, mysql_table, kpis):
             logger.warning(f'KPI {kpi_name} is None, skipping loading to PostgreSQL')
 
     logger.info("Data loading to PostgreSQL completed successfully")
+    return kpis
 
 if __name__ == "__main__":
     # Mock KpI data for testing
@@ -95,6 +105,7 @@ if __name__ == "__main__":
         'booking_count': pd.DataFrame({'Airline': ['Emirates'], 'Booking_Count': [1000]}),
         'popular_routes': pd.DataFrame({'Source': ['DAC'], 'Destination': ['LHR'], 'Booking_Count': [500]})
     }
+   
 
     load_to_postgres(
         mysql_conn_id='mysql_staging',
