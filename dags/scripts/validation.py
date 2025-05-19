@@ -36,13 +36,15 @@ def validate_data(mysql_conn_id, table_name):
     logger.info(f"Start validation for table {table_name}")
 
     # Construct mysql connection string from .env file
-    mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
-        f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
+    # mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
+    #     f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
+    mysql_conn_string = (f"mysql+mysqlconnector://root:{os.getenv('MYSQL_PASSWORD')}"
+                    f"@mysql:3306/{os.getenv('MYSQL_DATABASE')}")
     
     # Read data from MySQL table
     try:
         engine = create_engine(mysql_conn_string)
-        df = pd.read_sql_table(f"Select * from {table_name}", con=engine)
+        df = pd.read_sql(f"Select * from {table_name}", con=engine)
         logger.info(f"Read {len(df)} rows from {table_name} table")
     except Exception as e:
         logger.error(f'Failed to read data from MySQL {e}')
