@@ -36,8 +36,10 @@ def transform_and_compute_kpis(mysql_conn_id, table_name):
     logger.info(f"Starting transformation and KPI computation for table {table_name}")
 
     # Construct mysql connection string from .env file
-    mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
-        f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
+    # mysql_conn_string = (f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
+    #     f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}")
+    mysql_conn_string = (f"mysql+mysqlconnector://root:{os.getenv('MYSQL_PASSWORD')}"
+                    f"@mysql:3306/{os.getenv('MYSQL_DATABASE')}")
     
     # Read data from MySQL table
     try:
